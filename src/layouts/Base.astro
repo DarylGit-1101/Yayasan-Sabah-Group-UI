@@ -1,0 +1,60 @@
+---
+import '../styles/global.css';
+import { alternateLocaleUrl, localeFromPathname, useTranslations } from '../i18n/ui';
+
+import Header from '../components/Header.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Optional overrides for the og:image URL (absolute or root-relative). */
+  image?: string;
+}
+
+const { title, description, image = '/favicon.svg' } = Astro.props;
+
+const site = Astro.site ?? new URL('https://www.yayasansabahgroup.org.my');
+const locale = localeFromPathname(Astro.url.pathname);
+const t = useTranslations(locale);
+const canonical = new URL(Astro.url.pathname, site);
+const alternate = alternateLocaleUrl(Astro.url.pathname, locale === 'en' ? 'bm' : 'en');
+const ogImage = new URL(image, site).href;
+---
+
+<!doctype html>
+<html lang={locale === 'bm' ? 'ms' : 'en'}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="alternate" hreflang={locale === 'bm' ? 'ms' : 'en'} href={canonical.href} />
+    <link rel="alternate" hreflang={locale === 'bm' ? 'en' : 'ms'} href={new URL(alternate, site).href} />
+    <link rel="alternate" hreflang="x-default" href={new URL(alternateLocaleUrl(Astro.url.pathname, 'en'), site).href} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={t('site.name')} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body class="min-h-screen bg-base text-ink antialiased">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-slate-900 focus:px-4 focus:py-2 focus:text-white"
+    >
+      {t('a11y.skipToContent')}
+    </a>
+    <Header />
+    <slot />
+  </body>
+</html>

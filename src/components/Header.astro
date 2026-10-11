@@ -1,0 +1,156 @@
+---
+import Topbar from './Topbar.astro';
+import NavDrawer from '../islands/NavDrawer';
+import { NAV, type NavItem } from '../data/nav';
+import {
+  localeFromPathname,
+  localeHref,
+  useTranslations,
+} from '../i18n/ui';
+
+const locale = localeFromPathname(Astro.url.pathname);
+const t = useTranslations(locale);
+const pathname = Astro.url.pathname;
+---
+
+<header class="sticky top-0 z-40 w-full bg-white shadow-xs">
+  <!-- Tier 1: Official Maroon Topbar -->
+  <Topbar locale={locale} pathname={pathname} />
+
+  <!-- Tier 2: Full-Width Rectangular Main Navigation -->
+  <div class="w-full border-b border-brand-border bg-white">
+    <div class="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <!-- Brand Logo -->
+      <a href={localeHref('/', locale)} class="flex items-center gap-3 transition-opacity hover:opacity-95">
+        <img
+          src="/images/ys-logo.png"
+          alt={t('site.name')}
+          class="h-12 w-auto max-w-[280px] object-contain sm:h-14"
+        />
+        <span class="sr-only">{t('site.name')}</span>
+      </a>
+
+      <!-- Desktop Navigation Menu -->
+      <nav aria-label={t('nav.primary')} class="hidden items-center gap-1 lg:flex xl:gap-2">
+        <ul class="flex items-center">
+          {NAV.map((item: NavItem) => {
+            const hasColumns = item.columns && item.columns.length > 0;
+            const itemLabel = item.label[locale];
+            const isHome = item.id === 'home';
+            const isActive = isHome
+              ? pathname === '/' || pathname === '/bm/'
+              : pathname.includes(item.href);
+
+            if (!hasColumns) {
+              return (
+                <li>
+                  <a
+                    href={localeHref(item.href, locale)}
+                    class={`relative px-3.5 py-2.5 text-[14px] font-bold tracking-wide uppercase transition-colors ${
+                      isActive
+                        ? 'text-brand-maroon'
+                        : 'text-brand-ink/90 hover:text-brand-maroon'
+                    }`}
+                  >
+                    {itemLabel}
+                    {isActive && (
+                      <span class="absolute bottom-0 left-3.5 right-3.5 h-[3px] bg-brand-maroon" />
+                    )}
+                  </a>
+                </li>
+              );
+            }
+
+            // Determine mega-menu dropdown width and alignment based on column count
+            const colCount = item.columns!.length;
+            const menuWidthClass = colCount >= 3
+              ? 'w-[840px] -left-64'
+              : colCount === 2
+                ? 'w-[620px] -left-36'
+                : 'w-[320px] left-0';
+
+            return (
+              <li class="group relative">
+                <a
+                  href={localeHref(item.href, locale)}
+                  class={`flex items-center gap-1 px-3.5 py-2.5 text-[14px] font-bold tracking-wide uppercase transition-colors ${
+                    isActive
+                      ? 'text-brand-maroon'
+                      : 'text-brand-ink/90 group-hover:text-brand-maroon'
+                  }`}
+                  aria-haspopup="true"
+                >
+                  <span>{itemLabel}</span>
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-brand-ink/50 transition-transform duration-200 group-hover:rotate-180 group-hover:text-brand-maroon"
+                    aria-hidden="true"
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                  {isActive && (
+                    <span class="absolute bottom-0 left-3.5 right-3.5 h-[3px] bg-brand-maroon" />
+                  )}
+                </a>
+
+                {/* Mega-Menu Dropdown Panel */}
+                <div
+                  class={`invisible absolute top-full z-50 mt-0 ${menuWidthClass} border-t-3 border-brand-maroon border-x border-b border-brand-border bg-white p-6 shadow-2xl opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100`}
+                >
+                  <div class={`grid gap-8 ${colCount >= 3 ? 'grid-cols-3' : colCount === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                    {item.columns!.map((col) => (
+                      <div class="space-y-3">
+                        {col.title && (
+                          <h4 class="border-b border-brand-cream pb-1.5 text-xs font-bold uppercase tracking-wider text-brand-maroon">
+                            {col.title[locale]}
+                          </h4>
+                        )}
+                        <ul class="space-y-1.5">
+                          {col.items.map((sub) => (
+                            <li>
+                              <a
+                                href={localeHref(sub.href, locale)}
+                                class="group/link flex items-start gap-2 py-1 text-[13px] text-brand-ink/85 transition-colors hover:text-brand-maroon"
+                              >
+                                <span class="font-bold text-brand-gold transition-transform group-hover/link:translate-x-0.5" aria-hidden="true">
+                                  ›
+                                </span>
+                                <span>{sub.label[locale]}</span>
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+
+        <!-- Search Icon Button -->
+        <button
+          type="button"
+          aria-label={t('nav.search')}
+          class="ml-2 flex h-9 w-9 items-center justify-center rounded-full text-brand-ink/80 transition-colors hover:bg-brand-cream/60 hover:text-brand-maroon"
+        >
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+        </button>
+      </nav>
+
+      <!-- Mobile Navigation Hamburger (Drawer Trigger) -->
+      <NavDrawer client:media="(max-width: 1023px)" locale={locale} pathname={pathname} />
+    </div>
+  </div>
+</header>

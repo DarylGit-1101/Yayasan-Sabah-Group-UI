@@ -1,11 +1,36 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+import Base from '../layouts/Base.astro';
+import { useTranslations } from '../i18n/ui';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+const t = useTranslations('en');
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<Base title={t('site.name')} description="Yayasan Sabah Group official portal">
+  <main id="main" class="mx-auto max-w-5xl px-6 py-20">
+    <div class="rounded-xl border border-brand-border bg-white p-10 shadow-sm">
+      <span class="inline-block rounded-full bg-brand-cream px-3 py-1 text-xs font-semibold uppercase tracking-wider text-brand-maroon">
+        Official Portal Rebuild
+      </span>
+      <h1 class="mt-4 text-4xl font-extrabold tracking-tight text-brand-maroon sm:text-5xl">
+        {t('site.name')}
+      </h1>
+      <p class="mt-4 text-lg text-brand-muted">
+        {t('site.tagline')}
+      </p>
+      <div class="mt-8 flex items-center gap-4 border-t border-brand-border pt-6">
+        <a
+          href="/about/"
+          class="inline-flex items-center justify-center rounded-md bg-brand-maroon px-5 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-brand-maroon-dark"
+        >
+          Explore About Us
+        </a>
+        <a
+          href="/bm/"
+          class="inline-flex items-center justify-center rounded-md border border-brand-border bg-white px-5 py-2.5 text-sm font-semibold text-brand-ink transition-colors hover:bg-stone-50"
+        >
+          Tukar ke {t('lang.toggle')}
+        </a>
+      </div>
+    </div>
+  </main>
+</Base>
