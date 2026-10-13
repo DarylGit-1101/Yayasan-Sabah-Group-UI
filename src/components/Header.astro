@@ -25,7 +25,7 @@ const pathname = Astro.url.pathname;
         <img
           src="/images/ys-logo.png"
           alt={t('site.name')}
-          class="h-12 w-auto max-w-[280px] object-contain sm:h-14"
+          class="h-12 w-auto max-w-70 object-contain sm:h-14"
         />
         <span class="sr-only">{t('site.name')}</span>
       </a>
@@ -54,7 +54,7 @@ const pathname = Astro.url.pathname;
                   >
                     {itemLabel}
                     {isActive && (
-                      <span class="absolute bottom-0 left-3.5 right-3.5 h-[3px] bg-brand-maroon" />
+                      <span class="absolute bottom-0 left-3.5 right-3.5 h-0.75 bg-brand-maroon" />
                     )}
                   </a>
                 </li>
@@ -70,10 +70,11 @@ const pathname = Astro.url.pathname;
                 : 'w-[320px] left-0';
 
             return (
-              <li class="group relative">
+              <li class="nav-dropdown group relative" data-nav-dropdown>
                 <a
                   href={localeHref(item.href, locale)}
-                  class={`flex items-center gap-1 px-3.5 py-2.5 text-[14px] font-bold tracking-wide uppercase transition-colors ${
+                  data-nav-trigger="true"
+                  class={`nav-trigger flex items-center gap-1 px-3.5 py-2.5 text-[14px] font-bold tracking-wide uppercase transition-colors ${
                     isActive
                       ? 'text-brand-maroon'
                       : 'text-brand-ink/90 group-hover:text-brand-maroon'
@@ -96,13 +97,14 @@ const pathname = Astro.url.pathname;
                     <polyline points="6 9 12 15 18 9" />
                   </svg>
                   {isActive && (
-                    <span class="absolute bottom-0 left-3.5 right-3.5 h-[3px] bg-brand-maroon" />
+                    <span class="nav-underline absolute bottom-0 left-3.5 right-3.5 h-0.75 bg-brand-maroon" />
                   )}
                 </a>
 
                 {/* Mega-Menu Dropdown Panel */}
                 <div
-                  class={`invisible absolute top-full z-50 mt-0 ${menuWidthClass} border-t-3 border-brand-maroon border-x border-b border-brand-border bg-white p-6 shadow-2xl opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100`}
+                  data-nav-panel="true"
+                  class={`nav-panel invisible absolute top-full z-50 mt-0 ${menuWidthClass} border-t-3 border-brand-maroon border-x border-b bg-white p-6 shadow-2xl opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100`}
                 >
                   <div class={`grid gap-8 ${colCount >= 3 ? 'grid-cols-3' : colCount === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
                     {item.columns!.map((col) => (
@@ -154,3 +156,62 @@ const pathname = Astro.url.pathname;
     </div>
   </div>
 </header>
+
+<script>
+  // Desktop mega-menu: clicking a trigger pins its panel open instead of
+  // navigating. Only the white desktop navbar uses these attributes — the
+  // mobile drawer is a separate island and is untouched.
+  const dropdowns = Array.from(
+    document.querySelectorAll<HTMLElement>('[data-nav-dropdown]')
+  );
+
+  if (dropdowns.length > 0) {
+    const unpinAll = (except?: HTMLElement) => {
+      dropdowns.forEach((dd) => {
+        if (dd !== except) dd.removeAttribute('data-pinned');
+      });
+    };
+
+    dropdowns.forEach((dd) => {
+      const trigger = dd.querySelector<HTMLAnchorElement>('[data-nav-trigger]');
+      if (!trigger) return;
+
+      trigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        const isPinned = dd.hasAttribute('data-pinned');
+        unpinAll(dd);
+        if (isPinned) dd.removeAttribute('data-pinned');
+        else dd.setAttribute('data-pinned', '');
+      });
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') unpinAll();
+    });
+
+    document.addEventListener('click', (event) => {
+      const target = event.target as Node | null;
+      if (target && !dropdowns.some((dd) => dd.contains(target))) unpinAll();
+    });
+  }
+</script>
+
+<style>
+  /* Clicking a nav trigger pins its dropdown open (see script above).
+     While pinned, the panel stays visible and the trigger reverts to its
+     resting colour — no re-highlight on hover — and its underline is hidden.
+     Hovering the other nav items still highlights them normally. */
+  .nav-dropdown[data-pinned] .nav-panel {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .nav-dropdown[data-pinned].nav-dropdown .nav-trigger,
+  .nav-dropdown[data-pinned].nav-dropdown .nav-trigger:hover {
+    color: color-mix(in oklab, var(--color-brand-ink) 90%, transparent);
+  }
+
+  .nav-dropdown[data-pinned] .nav-underline {
+    display: none;
+  }
+</style>
