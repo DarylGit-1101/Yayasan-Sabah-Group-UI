@@ -1,0 +1,33 @@
+---
+import type { Locale } from '../../i18n/ui';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+---
+
+<section id="hero" class="relative overflow-hidden bg-brand-maroon py-20 text-white">
+  <div class="mx-auto max-w-7xl px-6 lg:px-8">
+    <div class="max-w-2xl">
+      <span class="inline-block rounded-full bg-brand-gold/20 px-3 py-1 text-xs font-semibold tracking-wide text-brand-gold">
+        {locale === 'bm' ? 'Portal Rasmi' : 'Official Portal'}
+      </span>
+      <h1 class="mt-4 text-3xl font-extrabold tracking-tight sm:text-5xl">
+        {locale === 'bm' ? 'Menerajui Pembangunan Pendidikan & Ekonomi Rakyat Sabah' : 'Advancing Education & Socioeconomic Development in Sabah'}
+      </h1>
+      <p class="mt-4 text-base text-stone-200 sm:text-lg">
+        {locale === 'bm' ? 'Gerbang perkhidmatan awam Yayasan Sabah Group.' : 'Yayasan Sabah Group citizen services and public resources.'}
+      </p>
+      <div class="mt-6 flex flex-wrap gap-4">
+        <a
+          href="#services"
+          class="inline-flex items-center rounded-md bg-brand-gold px-5 py-2.5 text-sm font-semibold text-brand-maroon-dark transition-colors hover:bg-brand-gold-hover"
+        >
+          {locale === 'bm' ? 'Lihat Perkhidmatan' : 'Explore Services'}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

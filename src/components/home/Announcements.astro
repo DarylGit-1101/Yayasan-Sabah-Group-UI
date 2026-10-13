@@ -1,0 +1,37 @@
+---
+import type { Locale } from '../../i18n/ui';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+---
+
+<section id="announcements" class="border-y border-brand-border bg-brand-cream/30 py-12">
+  <div class="mx-auto max-w-7xl px-6 lg:px-8">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl font-bold text-brand-maroon sm:text-2xl">
+        {locale === 'bm' ? 'Pengumuman Penting' : 'Important Announcements'}
+      </h2>
+      <a href="/media/announcements/" class="text-xs font-semibold text-brand-maroon hover:underline">
+        {locale === 'bm' ? 'Lihat Semua →' : 'View All →'}
+      </a>
+    </div>
+    <div class="mt-6 rounded-lg border border-amber-200 bg-amber-50/80 p-5">
+      <div class="flex items-start gap-4">
+        <span class="inline-block rounded bg-amber-600 px-2 py-0.5 text-xs font-semibold text-white">
+          Active Deadline
+        </span>
+        <div>
+          <h3 class="font-bold text-stone-900">
+            {locale === 'bm' ? 'Permohonan TPNS 2026 Kini Dibuka' : 'TPNS 2026 Applications Open'}
+          </h3>
+          <p class="mt-1 text-xs text-stone-600">
+            {locale === 'bm' ? 'Tarikh tutup: 31 Oktober 2026' : 'Closing date: 31 October 2026'}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

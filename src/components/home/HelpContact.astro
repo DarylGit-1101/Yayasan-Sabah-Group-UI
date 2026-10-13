@@ -1,0 +1,39 @@
+---
+import type { Locale } from '../../i18n/ui';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+---
+
+<section id="help-contact" class="py-16 border-t border-brand-border">
+  <div class="mx-auto max-w-7xl px-6 lg:px-8">
+    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <div class="rounded-lg border border-brand-border bg-white p-6 shadow-xs">
+        <h3 class="text-lg font-bold text-brand-maroon">
+          {locale === 'bm' ? 'Soalan Lazim (FAQ)' : 'Frequently Asked Questions'}
+        </h3>
+        <p class="mt-2 text-sm text-brand-muted">
+          {locale === 'bm' ? 'Jawapan pantas mengenai biasiswa, permohonan, dan perkhidmatan kami.' : 'Quick answers about scholarships, applications, and public services.'}
+        </p>
+        <a href="/faqs.cfm" class="mt-4 inline-block text-xs font-semibold text-brand-maroon hover:underline">
+          {locale === 'bm' ? 'Buka Soalan Lazim →' : 'Browse FAQs →'}
+        </a>
+      </div>
+
+      <div class="rounded-lg border border-brand-border bg-white p-6 shadow-xs">
+        <h3 class="text-lg font-bold text-brand-maroon">
+          {locale === 'bm' ? 'Hubungi Kami' : 'Contact & Helpdesk'}
+        </h3>
+        <p class="mt-2 text-sm text-brand-muted">
+          {locale === 'bm' ? 'Ibu Pejabat Menara Tun Mustapha, Likas Bay, Kota Kinabalu.' : 'Menara Tun Mustapha Headquarters, Likas Bay, Kota Kinabalu.'}
+        </p>
+        <a href="/contact.cfm" class="mt-4 inline-block text-xs font-semibold text-brand-maroon hover:underline">
+          {locale === 'bm' ? 'Saluran Bantuan & Direktori →' : 'Helpdesk Directory & Enquiries →'}
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

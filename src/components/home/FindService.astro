@@ -1,0 +1,29 @@
+---
+import type { Locale } from '../../i18n/ui';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+---
+
+<section id="find-service" class="border-b border-brand-border bg-brand-cream/40 py-8">
+  <div class="mx-auto max-w-7xl px-6 lg:px-8">
+    <div class="mx-auto max-w-2xl text-center">
+      <h2 class="text-xl font-bold text-brand-maroon sm:text-2xl">
+        {locale === 'bm' ? 'Cari Perkhidmatan' : 'Find a Service'}
+      </h2>
+      <div class="mt-4 relative flex items-center">
+        <input
+          type="search"
+          placeholder={locale === 'bm' ? 'Apa yang anda cari? (cth: biasiswa, bayaran balik, tadika)' : 'What are you looking for? (e.g., scholarship, repayment, preschool)'}
+          class="w-full rounded-lg border border-brand-border bg-white px-4 py-3 pl-11 text-sm text-brand-ink placeholder:text-brand-muted shadow-xs focus:border-brand-maroon focus:outline-none focus:ring-1 focus:ring-brand-maroon"
+        />
+        <svg class="absolute left-3.5 h-5 w-5 text-brand-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>

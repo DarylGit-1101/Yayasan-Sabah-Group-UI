@@ -1,0 +1,32 @@
+---
+import type { Locale } from '../../i18n/ui';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+---
+
+<section id="services" class="py-16">
+  <div class="mx-auto max-w-7xl px-6 lg:px-8">
+    <div class="border-b border-brand-border pb-4">
+      <h2 class="text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">
+        {locale === 'bm' ? 'Perkhidmatan Utama' : 'Popular Services'}
+      </h2>
+      <p class="mt-2 text-sm text-brand-muted">
+        {locale === 'bm' ? 'Akses terus kepada bantuan pendidikan, bayaran balik pinjaman, dan kemudahan awam.' : 'Direct access to education aid, loan repayment, and public facilities.'}
+      </p>
+    </div>
+
+    <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Skeleton cards to demonstrate layout */}
+      {['Education & Scholarships', 'Loan Repayment', 'Preschool & Childcare', 'Careers & Opportunities', 'Sports & Facilities', 'Forms & Assistance'].map((item) => (
+        <div class="rounded-lg border border-brand-border bg-white p-6 shadow-xs hover:border-brand-gold transition-colors">
+          <h3 class="font-semibold text-brand-maroon">{item}</h3>
+          <p class="mt-2 text-xs text-brand-muted">Service placeholder card</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
