@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import { useTranslations } from '../i18n/ui';
 
 import Hero from '../components/home/Hero.astro';
-import PopularServices from '../components/home/PopularServices.astro';
+import PopularLinks from '../components/home/PopularLinks.astro';
 import Announcements from '../components/home/Announcements.astro';
 import LatestNews from '../components/home/LatestNews.astro';
 import DiscoverYSG from '../components/home/DiscoverYSG.astro';
@@ -16,7 +16,7 @@ const t = useTranslations('en');
 <Base title={t('site.name')} description="Yayasan Sabah Group official portal - Education, public services, and socioeconomic development in Sabah.">
   <main id="main">
     <Hero locale="en" />
-    <PopularServices locale="en" />
+    <PopularLinks locale="en" />
     <Announcements locale="en" />
     <LatestNews locale="en" />
     <DiscoverYSG locale="en" />
