@@ -1,39 +1,80 @@
 ---
 import type { Locale } from '../../i18n/ui';
 
-interface Props {
-  locale?: Locale;
-}
-
+interface Props { locale?: Locale }
 const { locale = 'en' } = Astro.props;
+
+const cards = [
+  {
+    id: 'faq',
+    href: locale === 'bm' ? '/bm/media/faq/' : '/media/faq/',
+    iconPaths: `<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/>`,
+    title: { en: 'Frequently Asked Questions', bm: 'Soalan Lazim (FAQ)' },
+    desc:  { en: 'Quick answers about scholarships, applications, and public services.', bm: 'Jawapan pantas mengenai biasiswa, permohonan, dan perkhidmatan kami.' },
+    cta:   { en: 'Browse FAQs', bm: 'Buka Soalan Lazim' },
+  },
+  {
+    id: 'contact',
+    href: '/contact.cfm',
+    iconPaths: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`,
+    title: { en: 'Contact & Helpdesk', bm: 'Hubungi Kami' },
+    desc:  { en: 'Menara Tun Mustapha Headquarters, Likas Bay, Kota Kinabalu.', bm: 'Ibu Pejabat Menara Tun Mustapha, Teluk Likas, Kota Kinabalu.' },
+    cta:   { en: 'Helpdesk & Directory', bm: 'Saluran Bantuan & Direktori' },
+  },
+] as const;
 ---
 
-<section id="help-contact" class="py-16 border-t border-brand-border">
+<section id="help-contact" class="scroll-mt-28 border-t border-brand-border bg-base py-16 sm:py-20">
   <div class="mx-auto max-w-7xl px-6 lg:px-8">
-    <div class="grid grid-cols-1 gap-8 md:grid-cols-2">
-      <div class="rounded-lg border border-brand-border bg-white p-6 shadow-xs">
-        <h3 class="text-lg font-bold text-brand-maroon">
-          {locale === 'bm' ? 'Soalan Lazim (FAQ)' : 'Frequently Asked Questions'}
-        </h3>
-        <p class="mt-2 text-sm text-brand-muted">
-          {locale === 'bm' ? 'Jawapan pantas mengenai biasiswa, permohonan, dan perkhidmatan kami.' : 'Quick answers about scholarships, applications, and public services.'}
-        </p>
-        <a href="/faqs.cfm" class="mt-4 inline-block text-xs font-semibold text-brand-maroon hover:underline">
-          {locale === 'bm' ? 'Buka Soalan Lazim →' : 'Browse FAQs →'}
-        </a>
-      </div>
 
-      <div class="rounded-lg border border-brand-border bg-white p-6 shadow-xs">
-        <h3 class="text-lg font-bold text-brand-maroon">
-          {locale === 'bm' ? 'Hubungi Kami' : 'Contact & Helpdesk'}
-        </h3>
-        <p class="mt-2 text-sm text-brand-muted">
-          {locale === 'bm' ? 'Ibu Pejabat Menara Tun Mustapha, Likas Bay, Kota Kinabalu.' : 'Menara Tun Mustapha Headquarters, Likas Bay, Kota Kinabalu.'}
-        </p>
-        <a href="/contact.cfm" class="mt-4 inline-block text-xs font-semibold text-brand-maroon hover:underline">
-          {locale === 'bm' ? 'Saluran Bantuan & Direktori →' : 'Helpdesk Directory & Enquiries →'}
-        </a>
-      </div>
+    <div class="mb-8">
+      <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">
+        {locale === 'bm' ? 'Sokongan' : 'Support'}
+      </p>
+      <h2 class="mt-1.5 text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">
+        {locale === 'bm' ? 'Bantuan & Hubungi Kami' : 'Help & Contact'}
+      </h2>
     </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      {cards.map((card) => (
+        <a
+          href={card.href}
+          class="group flex flex-col gap-5 rounded-xl border border-brand-border bg-white p-6 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-brand-gold/50 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
+        >
+          {/* Icon */}
+          <div class="flex size-10 shrink-0 items-center justify-center rounded-lg border border-brand-border bg-brand-cream transition-colors duration-200 group-hover:border-brand-gold/40">
+            <svg
+              class="size-5 text-brand-maroon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+              set:html={card.iconPaths}
+            />
+          </div>
+
+          {/* Text */}
+          <div class="flex-1">
+            <h3 class="font-semibold text-brand-maroon transition-colors group-hover:text-brand-maroon-dark">
+              {card.title[locale]}
+            </h3>
+            <p class="mt-1.5 text-sm leading-6 text-brand-muted">
+              {card.desc[locale]}
+            </p>
+          </div>
+
+          {/* CTA row */}
+          <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-maroon group-hover:text-brand-gold-hover">
+            {card.cta[locale]}
+            <span aria-hidden="true" class="transition-transform duration-200 group-hover:translate-x-0.5">→</span>
+          </span>
+        </a>
+      ))}
+    </div>
+
   </div>
 </section>

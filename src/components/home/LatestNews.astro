@@ -1,35 +1,58 @@
 ---
 import type { Locale } from '../../i18n/ui';
 
-interface Props {
-  locale?: Locale;
-}
-
+interface Props { locale?: Locale }
 const { locale = 'en' } = Astro.props;
+const cards = [
+  {
+    href: '/media/news/',
+    label: locale === 'bm' ? 'Berita semasa' : 'Current news',
+    title: locale === 'bm' ? 'Berita & perkembangan' : 'News & updates',
+    description: locale === 'bm' ? 'Ikuti perkembangan terkini Kumpulan Yayasan Sabah.' : 'Read the latest updates from Yayasan Sabah Group.',
+    mark: '01',
+  },
+  {
+    href: '/media/press-release/',
+    label: locale === 'bm' ? 'Kenyataan rasmi' : 'Official statements',
+    title: locale === 'bm' ? 'Kenyataan media' : 'Press releases',
+    description: locale === 'bm' ? 'Maklumat dan pengumuman rasmi untuk media dan orang ramai.' : 'Official information and announcements for the media and public.',
+    mark: '02',
+  },
+  {
+    href: '/media/calendar/',
+    label: locale === 'bm' ? 'Apa yang akan datang' : 'What’s coming up',
+    title: locale === 'bm' ? 'Kalendar acara' : 'Events calendar',
+    description: locale === 'bm' ? 'Terokai acara dan aktiviti Kumpulan Yayasan Sabah.' : 'Explore events and activities from Yayasan Sabah Group.',
+    mark: '03',
+  },
+];
 ---
 
-<section id="news" class="py-16">
+<section id="news" class="scroll-mt-28 py-16 sm:py-20">
   <div class="mx-auto max-w-7xl px-6 lg:px-8">
-    <div class="flex items-center justify-between border-b border-brand-border pb-4">
-      <h2 class="text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">
-        {locale === 'bm' ? 'Berita & Acara Terkini' : 'Latest News & Events'}
-      </h2>
-      <a href="/media/news/" class="text-xs font-semibold text-brand-maroon hover:underline">
-        {locale === 'bm' ? 'Arkib Berita →' : 'News Archive →'}
+    <div class="flex flex-col gap-3 border-b border-brand-border pb-5 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">{locale === 'bm' ? 'Cerita & perkembangan' : 'Stories & updates'}</p>
+        <h2 class="mt-2 text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">
+          {locale === 'bm' ? 'Berita & acara' : 'News & events'}
+        </h2>
+      </div>
+      <a href={locale === 'bm' ? '/bm/media/news/' : '/media/news/'} class="inline-flex items-center gap-2 text-sm font-semibold text-brand-maroon hover:text-brand-gold-hover">
+        {locale === 'bm' ? 'Semua berita' : 'All news'} <span aria-hidden="true">→</span>
       </a>
     </div>
 
-    <div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-3">
-      {[1, 2, 3].map((num) => (
-        <article class="flex flex-col rounded-lg border border-brand-border bg-white p-5 shadow-xs">
-          <div class="h-40 rounded bg-stone-100 flex items-center justify-center text-xs text-stone-400">
-            Image Placeholder
+    <div class="mt-7 grid gap-4 md:grid-cols-3">
+      {cards.map((card) => (
+        <a href={locale === 'bm' ? `/bm${card.href}` : card.href} class="group relative flex min-h-56 flex-col justify-between overflow-hidden rounded-2xl border border-brand-border bg-white p-6 transition duration-200 hover:-translate-y-1 hover:border-brand-gold hover:shadow-lg hover:shadow-brand-maroon/5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon">
+          <span aria-hidden="true" class="absolute -right-3 -top-7 text-8xl font-semibold tracking-tighter text-brand-cream/70 transition-transform duration-300 group-hover:scale-110">{card.mark}</span>
+          <div class="relative">
+            <span class="inline-flex rounded-full bg-brand-cream/70 px-3 py-1 text-[11px] font-bold uppercase tracking-wide text-brand-maroon">{card.label}</span>
+            <h3 class="mt-5 text-xl font-bold tracking-tight text-brand-ink group-hover:text-brand-maroon">{card.title}</h3>
+            <p class="mt-2 max-w-xs text-sm leading-6 text-brand-muted">{card.description}</p>
           </div>
-          <span class="mt-4 text-xs text-brand-muted">12 Oct 2026</span>
-          <h3 class="mt-1 font-semibold text-brand-ink">
-            {locale === 'bm' ? `Tajuk Berita Contoh ${num}` : `Sample News Article Title ${num}`}
-          </h3>
-        </article>
+          <span class="relative mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-maroon">{locale === 'bm' ? 'Terokai' : 'Explore'} <span aria-hidden="true" class="transition-transform group-hover:translate-x-1">→</span></span>
+        </a>
       ))}
     </div>
   </div>
