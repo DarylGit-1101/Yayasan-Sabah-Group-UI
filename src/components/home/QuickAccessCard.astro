@@ -1,0 +1,130 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import type { Locale } from '../../i18n/ui';
+import type { QuickLinkRow } from '../../db/supabase';
+
+interface Props {
+  item: QuickLinkRow;
+  locale: Locale;
+}
+
+const { item, locale } = Astro.props;
+const isExternal = item.external === true;
+const isClosed   = item.available === false;
+const title = locale === 'bm' ? (item.title_bm || item.title_en) : (item.title_en || item.title_bm);
+const href = locale === 'bm' ? (item.href_bm || item.href_en) : (item.href_en || item.href_bm);
+
+// Dynamic local image resolution via Astro's asset pipeline
+const localImages = import.meta.glob<{ default: ImageMetadata }>('../../assets/quick-links/*.{jpeg,jpg,png,webp,avif}');
+
+let localImagePromise: (() => Promise<{ default: ImageMetadata }>) | null = null;
+let isRemoteImage = false;
+let remoteImageUrl: string | null = null;
+
+if (item.image_url) {
+  if (item.image_url.startsWith('http://') || item.image_url.startsWith('https://')) {
+    isRemoteImage = true;
+    remoteImageUrl = item.image_url;
+  } else {
+    const rawFilename = item.image_url.split('/').pop() || '';
+    const matchedKey = Object.keys(localImages).find((path) => {
+      const base = path.split('/').pop() || '';
+      return (
+        base.toLowerCase() === rawFilename.toLowerCase() ||
+        base.replace(/\.[^/.]+$/, '').toLowerCase() === rawFilename.replace(/\.[^/.]+$/, '').toLowerCase()
+      );
+    });
+
+    if (matchedKey) {
+      localImagePromise = localImages[matchedKey];
+    }
+  }
+}
+
+const localImageMetadata = localImagePromise ? (await localImagePromise()).default : null;
+---
+
+<a
+  href={href}
+  target={isExternal ? '_blank' : undefined}
+  rel={isExternal ? 'noopener noreferrer' : undefined}
+  class="group relative flex h-full w-full flex-col justify-between overflow-hidden rounded-2xl border border-brand-border bg-white shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:border-brand-gold hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
+>
+
+  {/* Card Photo processed via Astro <Image /> */}
+  {(localImageMetadata || isRemoteImage || item.image_url) && (
+    <div class="relative aspect-16/10 w-full overflow-hidden bg-white">
+      {localImageMetadata ? (
+        <Image
+          src={localImageMetadata}
+          alt={title}
+          width={400}
+          height={250}
+          class="h-full w-full scale-[1.02] object-cover transition-transform duration-500 ease-out will-change-transform group-hover:scale-110"
+          style="backface-visibility: hidden;"
+        />
+      ) : isRemoteImage && remoteImageUrl ? (
+        <Image
+          src={remoteImageUrl}
+          alt={title}
+          width={400}
+          height={250}
+          class="h-full w-full scale-[1.02] object-cover transition-transform duration-500 ease-out will-change-transform group-hover:scale-110"
+          style="backface-visibility: hidden;"
+        />
+      ) : item.image_url ? (
+        <img
+          src={item.image_url.startsWith('/') ? item.image_url : `/images/quick-links/${item.image_url}`}
+          alt={title}
+          class="h-full w-full scale-[1.02] object-cover transition-transform duration-500 ease-out will-change-transform group-hover:scale-110"
+          style="backface-visibility: hidden;"
+          loading="lazy"
+        />
+      ) : null}
+      {/* Gradient fade — tall enough to cover the zoom margin */}
+      <div
+        class="pointer-events-none absolute inset-x-0 -bottom-px h-24 bg-linear-to-t from-white from-10% via-white/90 via-40% to-transparent"
+        aria-hidden="true"
+      ></div>
+    </div>
+  )}
+
+  <div class="relative z-10 -mt-4 flex flex-1 flex-col justify-between bg-white p-5 pt-0">
+    {/* Card title - dark high-contrast text */}
+    <p class="text-sm font-bold leading-snug text-slate-900 transition-colors duration-200 group-hover:text-brand-maroon sm:text-base">
+      {title}
+    </p>
+
+    {/* Badges & Action Footer */}
+    <div class="mt-4 flex items-center justify-between border-t border-brand-border/60 pt-3">
+      <div class="flex flex-wrap gap-1.5">
+        {isClosed && (
+          <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold leading-none text-red-700 ring-1 ring-inset ring-red-600/20">
+            {locale === 'bm' ? 'Ditutup' : 'Closed'}
+          </span>
+        )}
+        {isExternal && !isClosed && (
+          <span class="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 text-[11px] font-semibold leading-none text-stone-700 ring-1 ring-inset ring-stone-300">
+            <svg class="size-2.5 shrink-0" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M6 3H3v10h10v-3M10 3h3v3M13 3 7 9"/>
+            </svg>
+            {locale === 'bm' ? 'Laman Luaran' : 'External'}
+          </span>
+        )}
+      </div>
+
+      <span class="flex size-7 items-center justify-center rounded-full bg-stone-100 text-stone-700 ring-1 ring-inset ring-stone-200 transition-all duration-200 group-hover:bg-brand-maroon group-hover:text-white group-hover:ring-brand-maroon">
+        <svg class="size-3.5 transition-transform duration-200 group-hover:translate-x-px" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 8h10M9 4l4 4-4 4"/>
+        </svg>
+      </span>
+    </div>
+  </div>
+
+  {/* Bottom accent bar — slides in from left on hover */}
+  <div
+    aria-hidden="true"
+    class="absolute inset-x-0 bottom-0 h-0.5 origin-left scale-x-0 bg-linear-to-r from-brand-gold to-brand-gold/30 transition-transform duration-300 ease-out group-hover:scale-x-100"
+  ></div>
+</a>

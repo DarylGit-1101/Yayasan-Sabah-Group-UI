@@ -1,0 +1,37 @@
+---
+// Standalone 3D Animated Background Component powered by Vanta.js (WAVES)
+---
+
+<!-- Fixed background canvas: stays pinned behind all content without blocking clicks -->
+<div id="vanta-waves-bg" class="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true"></div>
+
+<!-- Load Three.js & Vanta WAVES via CDN -->
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script is:inline src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.waves.min.js"></script>
+
+<!-- Initialize Vanta WAVES -->
+<script is:inline>
+  window.addEventListener('DOMContentLoaded', () => {
+    // Respect accessibility settings
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    if (window.VANTA && window.VANTA.WAVES) {
+      window.VANTA.WAVES({
+        el: '#vanta-waves-bg',
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.0,
+        minWidth: 200.0,
+        scale: 1.0,
+        scaleMobile: 1.0,
+        color: 0xada297,   // Warm cream color
+        shininess: 20.0,   // Soft light reflections
+        waveHeight: 16.0,  // Smooth wave amplitude
+        waveSpeed: 0.65,   // Gentle, elegant pace
+        zoom: 0.85,
+      });
+    }
+  });
+</script>

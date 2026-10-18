@@ -20,5 +20,9 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
 
+  image: {
+    remotePatterns: [{ protocol: 'https' }],
+  },
+
   integrations: [preact()],
 });

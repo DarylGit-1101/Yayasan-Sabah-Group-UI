@@ -1,6 +1,8 @@
 ---
 import type { Locale } from '../i18n/ui';
 import { useTranslations } from '../i18n/ui';
+import { Image } from 'astro:assets';
+import logoWhiteImg from '../assets/ys-logo-white.png';
 
 interface Props {
   locale?: Locale;
@@ -17,7 +19,7 @@ const year = new Date().getFullYear();
       {/* Col 1: Identity */}
       <div class="md:col-span-2">
         <div class="flex items-center gap-3">
-          <img src="/images/ys-logo-white.png" alt="Yayasan Sabah Group Logo" class="h-10 w-auto" />
+          <Image src={logoWhiteImg} alt="Yayasan Sabah Group Logo" class="h-10 w-auto" loading="lazy" />
           <div>
             <div class="font-bold text-white tracking-wide">{t('site.name')}</div>
             <div class="text-xs text-stone-400">{t('site.tagline')}</div>
@@ -52,12 +54,12 @@ const year = new Date().getFullYear();
             </a>
           </li>
           <li>
-            <a href="/facilities.cfm" class="hover:text-white transition-colors">
+            <a href={locale === 'bm' ? '/bm/facilities/' : '/facilities/'} class="hover:text-white transition-colors">
               {locale === 'bm' ? 'Kemudahan Sukan' : 'Sports Facilities'}
             </a>
           </li>
           <li>
-            <a href="/borneo_research_library.cfm" class="hover:text-white transition-colors">
+            <a href={locale === 'bm' ? '/bm/borneo-research-library/' : '/borneo-research-library/'} class="hover:text-white transition-colors">
               {locale === 'bm' ? 'Perpustakaan Penyelidikan Borneo' : 'Borneo Research Library'}
             </a>
           </li>
@@ -71,27 +73,27 @@ const year = new Date().getFullYear();
         </h3>
         <ul class="mt-3 space-y-2 text-xs">
           <li>
-            <a href="/contact.cfm" class="hover:text-white transition-colors">
+            <a href={locale === 'bm' ? '/bm/contact/' : '/contact/'} class="hover:text-white transition-colors">
               {locale === 'bm' ? 'Hubungi Kami' : 'Contact Us'}
             </a>
           </li>
           <li>
-            <a href="/faqs.cfm" class="hover:text-white transition-colors">
+            <a href={locale === 'bm' ? '/bm/media/faq/' : '/media/faq/'} class="hover:text-white transition-colors">
               {locale === 'bm' ? 'Soalan Lazim' : 'FAQs'}
             </a>
           </li>
           <li>
-            <a href="/tender_notice.cfm" class="hover:text-white transition-colors">
+            <a href={locale === 'bm' ? '/bm/media/tender-notice/' : '/media/tender-notice/'} class="hover:text-white transition-colors">
               {locale === 'bm' ? 'Notis Tender' : 'Tenders'}
             </a>
           </li>
           <li>
-            <a href="/privacy.cfm" class="hover:text-white transition-colors">
+            <a href={locale === 'bm' ? '/bm/privacy-policy/' : '/privacy-policy/'} class="hover:text-white transition-colors">
               {locale === 'bm' ? 'Dasar Privasi' : 'Privacy Policy'}
             </a>
           </li>
           <li>
-            <a href="/disclaimer.cfm" class="hover:text-white transition-colors">
+            <a href={locale === 'bm' ? '/bm/disclaimer/' : '/disclaimer/'} class="hover:text-white transition-colors">
               {locale === 'bm' ? 'Penafian' : 'Disclaimer'}
             </a>
           </li>

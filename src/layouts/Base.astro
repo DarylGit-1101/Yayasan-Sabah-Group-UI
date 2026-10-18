@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { alternateLocaleUrl, localeFromPathname, useTranslations } from '../i18n/ui';
 
 import Header from '../components/Header.astro';
+import VantaBackground from '../components/VantaBackground.astro';
 
 interface Props {
   title: string;
@@ -47,7 +48,8 @@ const ogImage = new URL(image, site).href;
     <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
-  <body class="site-page-fade min-h-screen bg-base text-ink antialiased">
+  <body class="site-page-fade min-h-screen text-ink antialiased">
+    <VantaBackground />
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-slate-900 focus:px-4 focus:py-2 focus:text-white"

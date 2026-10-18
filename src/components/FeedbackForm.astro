@@ -1,0 +1,183 @@
+---
+import type { Locale } from '../i18n/ui';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+---
+
+<div class="rounded-2xl border border-brand-border bg-white p-6 sm:p-8 shadow-sm">
+  <h3 class="text-xl font-bold text-brand-maroon">
+    {locale === 'bm' ? 'Hantar Maklum Balas / Pertanyaan' : 'Send Feedback / Inquiry'}
+  </h3>
+  <p class="mt-1 text-sm text-brand-muted">
+    {locale === 'bm'
+      ? 'Sebarang pertanyaan atau maklum balas anda amat kami hargai. Sila lengkapkan borang di bawah.'
+      : 'We value your inquiries and feedback. Please complete the form below.'}
+  </p>
+
+  <!-- Success Notification Alert -->
+  <div id="feedback-success" class="hidden mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+    <div class="flex items-center gap-3">
+      <svg class="size-5 shrink-0 text-emerald-600" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+      </svg>
+      <div>
+        <p class="font-bold">{locale === 'bm' ? 'Maklum balas berjaya dihantar!' : 'Feedback successfully submitted!'}</p>
+        <p class="mt-0.5 text-xs text-emerald-700">
+          {locale === 'bm' ? 'Terima kasih atas maklum balas anda. Pihak kami akan menghubungi anda jika perlu.' : 'Thank you for reaching out. Our team will review your message shortly.'}
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Notification Alert -->
+  <div id="feedback-error" class="hidden mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800">
+    <p id="feedback-error-msg" class="font-semibold"></p>
+  </div>
+
+  <form id="feedback-form" class="mt-6 space-y-4">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label for="full_name" class="block text-xs font-bold uppercase tracking-wider text-brand-ink">
+          {locale === 'bm' ? 'Nama Penuh *' : 'Full Name *'}
+        </label>
+        <input
+          type="text"
+          id="full_name"
+          name="full_name"
+          required
+          class="mt-1 block w-full rounded-lg border border-brand-border bg-brand-surface/50 px-3.5 py-2.5 text-sm text-brand-ink placeholder:text-brand-muted/60 focus:border-brand-gold focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold"
+          placeholder={locale === 'bm' ? 'cth. Ahmad bin Abdullah' : 'e.g. John Doe'}
+        />
+      </div>
+
+      <div>
+        <label for="email" class="block text-xs font-bold uppercase tracking-wider text-brand-ink">
+          {locale === 'bm' ? 'E-mel *' : 'Email Address *'}
+        </label>
+        <input
+          type="email"
+          id="email"
+          name="email"
+          required
+          class="mt-1 block w-full rounded-lg border border-brand-border bg-brand-surface/50 px-3.5 py-2.5 text-sm text-brand-ink placeholder:text-brand-muted/60 focus:border-brand-gold focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold"
+          placeholder="name@example.com"
+        />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label for="phone_number" class="block text-xs font-bold uppercase tracking-wider text-brand-ink">
+          {locale === 'bm' ? 'Nombor Telefon' : 'Phone Number'}
+        </label>
+        <input
+          type="tel"
+          id="phone_number"
+          name="phone_number"
+          class="mt-1 block w-full rounded-lg border border-brand-border bg-brand-surface/50 px-3.5 py-2.5 text-sm text-brand-ink placeholder:text-brand-muted/60 focus:border-brand-gold focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold"
+          placeholder="012-3456789"
+        />
+      </div>
+
+      <div>
+        <label for="subject" class="block text-xs font-bold uppercase tracking-wider text-brand-ink">
+          {locale === 'bm' ? 'Subjek / Perkara *' : 'Subject *'}
+        </label>
+        <input
+          type="text"
+          id="subject"
+          name="subject"
+          required
+          class="mt-1 block w-full rounded-lg border border-brand-border bg-brand-surface/50 px-3.5 py-2.5 text-sm text-brand-ink placeholder:text-brand-muted/60 focus:border-brand-gold focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold"
+          placeholder={locale === 'bm' ? 'cth. Pertanyaan Biasiswa' : 'e.g. Scholarship Inquiry'}
+        />
+      </div>
+    </div>
+
+    <div>
+      <label for="message" class="block text-xs font-bold uppercase tracking-wider text-brand-ink">
+        {locale === 'bm' ? 'Mesej / Maklum Balas *' : 'Message / Feedback *'}
+      </label>
+      <textarea
+        id="message"
+        name="message"
+        rows="4"
+        required
+        class="mt-1 block w-full rounded-lg border border-brand-border bg-brand-surface/50 px-3.5 py-2.5 text-sm text-brand-ink placeholder:text-brand-muted/60 focus:border-brand-gold focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold"
+        placeholder={locale === 'bm' ? 'Tuliskan mesej anda di sini...' : 'Write your message here...'}
+      ></textarea>
+    </div>
+
+    <div>
+      <button
+        type="submit"
+        id="submit-btn"
+        class="inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-xl bg-brand-maroon px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-maroon/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon disabled:opacity-50"
+      >
+        <span id="btn-text">{locale === 'bm' ? 'Hantar Maklum Balas' : 'Submit Feedback'}</span>
+        <span id="btn-spinner" class="hidden">
+          <svg class="size-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+  import { supabase } from '../db/supabase';
+
+  const form = document.getElementById('feedback-form') as HTMLFormElement | null;
+  const successBox = document.getElementById('feedback-success');
+  const errorBox = document.getElementById('feedback-error');
+  const errorMsg = document.getElementById('feedback-error-msg');
+  const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement | null;
+  const btnText = document.getElementById('btn-text');
+  const btnSpinner = document.getElementById('btn-spinner');
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (submitBtn) submitBtn.disabled = true;
+      if (btnSpinner) btnSpinner.classList.remove('hidden');
+      if (successBox) successBox.classList.add('hidden');
+      if (errorBox) errorBox.classList.add('hidden');
+
+      const formData = new FormData(form);
+      const payload = {
+        full_name: String(formData.get('full_name') || '').trim(),
+        email: String(formData.get('email') || '').trim(),
+        phone_number: String(formData.get('phone_number') || '').trim() || null,
+        subject: String(formData.get('subject') || '').trim(),
+        message: String(formData.get('message') || '').trim(),
+        status: 1, // 1: New
+      };
+
+      try {
+        const { error } = await supabase.from('feedback').insert([payload]);
+
+        if (error) {
+          throw error;
+        }
+
+        form.reset();
+        if (successBox) successBox.classList.remove('hidden');
+      } catch (err: any) {
+        if (errorBox && errorMsg) {
+          errorMsg.textContent = err.message || 'Failed to submit feedback. Please try again.';
+          errorBox.classList.remove('hidden');
+        }
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+        if (btnSpinner) btnSpinner.classList.add('hidden');
+      }
+    });
+  }
+</script>

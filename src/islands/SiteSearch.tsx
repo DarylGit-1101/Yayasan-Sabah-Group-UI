@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { QUICK_ACCESS_ITEMS } from '../data/quick-access';
+import { supabase, type QuickLinkRow } from '../db/supabase';
 import { NAV } from '../data/nav';
 import { localeHref, type Locale } from '../i18n/ui';
 
@@ -10,8 +10,22 @@ interface Props {
 export default function SiteSearch({ locale }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [quickLinks, setQuickLinks] = useState<QuickLinkRow[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Fetch quick links dynamically from Supabase database
+  useEffect(() => {
+    supabase
+      .from('quick_links')
+      .select('id, title_en, title_bm, href_en, href_bm, available')
+      .eq('available', true)
+      .then(({ data }) => {
+        if (data && data.length > 0) {
+          setQuickLinks(data as QuickLinkRow[]);
+        }
+      });
+  }, []);
 
   const items = useMemo(() => {
     const navigation = NAV.flatMap((item) => [
@@ -20,11 +34,13 @@ export default function SiteSearch({ locale }: Props) {
         title: link.label[locale], href: localeHref(link.href, locale), group: item.label[locale],
       }))),
     ]);
-    const services = QUICK_ACCESS_ITEMS.map((item) => ({
-      title: item.title[locale], href: item.href[locale], group: locale === 'bm' ? 'Perkhidmatan' : 'Services',
+    const services = quickLinks.map((item) => ({
+      title: locale === 'bm' ? (item.title_bm || item.title_en) : (item.title_en || item.title_bm),
+      href: locale === 'bm' ? (item.href_bm || item.href_en) : (item.href_en || item.href_bm),
+      group: locale === 'bm' ? 'Perkhidmatan' : 'Services',
     }));
     return [...navigation, ...services];
-  }, [locale]);
+  }, [locale, quickLinks]);
 
   const results = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase();
@@ -60,55 +76,78 @@ export default function SiteSearch({ locale }: Props) {
   }, [open]);
 
   useEffect(() => {
-    if (!open) return;
-    inputRef.current?.focus();
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = previousOverflow; };
+    if (open) {
+      document.body.style.overflow = 'hidden';
+      setTimeout(() => inputRef.current?.focus(), 50);
+    } else {
+      document.body.style.overflow = '';
+      triggerRef.current?.focus();
+    }
   }, [open]);
 
-  function close() {
+  const close = () => {
     setOpen(false);
     setQuery('');
-    triggerRef.current?.focus();
-  }
+  };
 
   return (
     <>
       <button
         ref={triggerRef}
         type="button"
-        aria-label={locale === 'bm' ? 'Cari laman ini' : 'Search this site'}
         onClick={() => setOpen(true)}
-        class="inline-flex h-10 items-center gap-2 rounded-full border border-brand-border bg-white px-3 text-brand-ink transition hover:border-brand-gold hover:text-brand-maroon focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon lg:ml-2"
+        aria-label={locale === 'bm' ? 'Cari laman web' : 'Search website'}
+        class="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-border bg-white text-brand-ink transition-colors hover:border-brand-gold/60 hover:text-brand-maroon focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
       >
-        <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-          <circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" />
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
         </svg>
-        <span class="hidden text-sm font-medium xl:inline">{locale === 'bm' ? 'Cari' : 'Search'}</span>
       </button>
 
       {open && (
-        <div class="fixed inset-0 z-[70] flex items-start justify-center bg-stone-950/55 px-4 pt-[10vh] backdrop-blur-sm" onClick={(event) => event.target === event.currentTarget && close()}>
-          <section role="dialog" aria-modal="true" aria-labelledby="search-title" class="w-full max-w-2xl overflow-hidden rounded-2xl border border-white/70 bg-white shadow-2xl">
-            <h2 id="search-title" class="sr-only">{locale === 'bm' ? 'Cari laman ini' : 'Search this site'}</h2>
-            <div class="flex items-center gap-3 border-b border-brand-border px-5">
-              <svg viewBox="0 0 24 24" class="h-5 w-5 shrink-0 text-brand-gold" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></svg>
-              <input ref={inputRef} value={query} onInput={(event) => setQuery((event.currentTarget as HTMLInputElement).value)} placeholder={locale === 'bm' ? 'Cari perkhidmatan, berita, dan maklumat…' : 'Search services, news, and information…'} class="h-16 min-w-0 flex-1 bg-transparent text-base text-brand-ink outline-none placeholder:text-brand-muted" />
-              <button type="button" onClick={close} class="rounded-md border border-brand-border px-2 py-1 text-xs text-brand-muted hover:bg-brand-cream focus-visible:outline-2 focus-visible:outline-brand-maroon">Esc</button>
+        <div class="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:p-6 sm:pt-24" role="dialog" aria-modal="true" aria-label={locale === 'bm' ? 'Carian Laman' : 'Site Search'}>
+          <div class="fixed inset-0 bg-brand-maroon/20 backdrop-blur-sm transition-opacity" onClick={close} />
+          <div class="relative w-full max-w-lg overflow-hidden rounded-2xl border border-brand-border bg-white shadow-2xl">
+            <div class="flex items-center border-b border-brand-border px-4 py-3">
+              <svg class="h-5 w-5 text-brand-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <input
+                ref={inputRef}
+                type="search"
+                value={query}
+                onInput={(e) => setQuery((e.target as HTMLInputElement).value)}
+                placeholder={locale === 'bm' ? 'Cari halaman, perkhidmatan atau dokumen...' : 'Search pages, services, or documents...'}
+                class="ml-3 w-full border-0 bg-transparent text-sm text-brand-ink placeholder-brand-muted/70 focus:outline-none"
+              />
+              <kbd class="hidden rounded border border-brand-border bg-brand-cream/40 px-1.5 py-0.5 text-[10px] font-semibold text-brand-muted sm:inline-block">ESC</kbd>
             </div>
-            <div class="max-h-[60vh] overflow-y-auto p-3">
-              <p class="px-3 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-brand-muted">{query ? (locale === 'bm' ? 'Hasil carian' : 'Search results') : (locale === 'bm' ? 'Pautan popular' : 'Popular links')}</p>
-              {results.length ? (
+
+            <div class="max-h-80 overflow-y-auto p-2">
+              {results.length > 0 ? (
                 <ul class="space-y-1">
-                  {results.map((item) => <li key={`${item.group}-${item.href}-${item.title}`}><a href={item.href} onClick={close} class="group flex items-center justify-between gap-4 rounded-xl px-3 py-3 transition hover:bg-brand-cream/70 focus-visible:outline-2 focus-visible:outline-brand-maroon"><span><span class="block font-semibold text-brand-ink group-hover:text-brand-maroon">{item.title}</span><span class="mt-0.5 block text-xs text-brand-muted">{item.group}</span></span><span aria-hidden="true" class="text-brand-gold transition-transform group-hover:translate-x-1">→</span></a></li>)}
+                  {results.map((result) => (
+                    <li>
+                      <a
+                        href={result.href}
+                        onClick={close}
+                        class="flex items-center justify-between rounded-lg px-3 py-2 text-sm text-brand-ink transition-colors hover:bg-brand-cream/60 hover:text-brand-maroon focus:bg-brand-cream/60 focus:text-brand-maroon focus:outline-none"
+                      >
+                        <span class="font-medium">{result.title}</span>
+                        <span class="text-xs text-brand-muted">{result.group}</span>
+                      </a>
+                    </li>
+                  ))}
                 </ul>
               ) : (
-                <p class="px-3 py-8 text-center text-sm text-brand-muted">{locale === 'bm' ? 'Tiada hasil. Cuba kata kunci lain.' : 'No results found. Try another search term.'}</p>
+                <div class="py-8 text-center text-sm text-brand-muted">
+                  {locale === 'bm' ? 'Tiada hasil carian ditemui' : 'No results found'}
+                </div>
               )}
             </div>
-            <div class="flex items-center justify-between border-t border-brand-border bg-stone-50 px-5 py-3 text-[11px] text-brand-muted"><span>{locale === 'bm' ? 'Cari seluruh laman Yayasan Sabah' : 'Search across Yayasan Sabah Group'}</span><span><kbd class="rounded border border-brand-border bg-white px-1.5 py-0.5">Ctrl</kbd> + <kbd class="rounded border border-brand-border bg-white px-1.5 py-0.5">K</kbd></span></div>
-          </section>
+          </div>
         </div>
       )}
     </>

@@ -15,7 +15,7 @@ const cards = [
   },
   {
     id: 'contact',
-    href: '/contact.cfm',
+    href: locale === 'bm' ? '/bm/contact/' : '/contact/',
     iconPaths: `<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>`,
     title: { en: 'Contact & Helpdesk', bm: 'Hubungi Kami' },
     desc:  { en: 'Menara Tun Mustapha Headquarters, Likas Bay, Kota Kinabalu.', bm: 'Ibu Pejabat Menara Tun Mustapha, Teluk Likas, Kota Kinabalu.' },
@@ -24,7 +24,7 @@ const cards = [
 ] as const;
 ---
 
-<section id="help-contact" class="scroll-mt-28 border-t border-brand-border bg-base py-16 sm:py-20">
+<section id="help-contact" class="scroll-mt-28 border-t border-brand-border/40 bg-brand-surface/10 backdrop-blur-md py-16 sm:py-20">
   <div class="mx-auto max-w-7xl px-6 lg:px-8">
 
     <div class="mb-8">

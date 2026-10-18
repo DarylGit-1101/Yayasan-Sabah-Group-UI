@@ -1,0 +1,94 @@
+---
+import Base from '../../../../layouts/Base.astro';
+import Footer from '../../../../components/Footer.astro';
+import { supabase, type NewsRow } from '../../../../db/supabase';
+
+// Static paths for all news articles in BM queried strictly from Supabase
+export async function getStaticPaths() {
+  let articles: NewsRow[] = [];
+
+  try {
+    const { data, error } = await supabase.from('news').select('*');
+    if (data && !error) {
+      articles = data as NewsRow[];
+    }
+  } catch {
+    // offline
+  }
+
+  return articles.map((article) => ({
+    params: { slug: article.slug },
+    props: { article },
+  }));
+}
+
+interface Props {
+  article: NewsRow;
+}
+
+const { article } = Astro.props;
+const title = article.title_bm || article.title_en;
+const content = article.content_bm || article.content_en;
+const dateStr = article.published_at
+  ? new Date(article.published_at).toLocaleDateString('ms-MY', { year: 'numeric', month: 'long', day: 'numeric' })
+  : '';
+---
+
+<Base title={`${title} - Kumpulan Yayasan Sabah`} description={article.excerpt_bm || title}>
+  <main class="min-h-screen py-12 sm:py-16">
+    <article class="mx-auto max-w-4xl px-6 lg:px-8">
+      {/* Breadcrumb & Back */}
+      <div class="mb-8 flex items-center justify-between">
+        <a href="/bm/#news" class="inline-flex items-center gap-2 text-sm font-semibold text-brand-maroon hover:text-brand-gold">
+          ← Kembali ke Berita & Acara
+        </a>
+        <span class="inline-flex rounded-full bg-brand-cream px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-maroon">
+          {article.category || 'Berita'}
+        </span>
+      </div>
+
+      {/* Title */}
+      <h1 class="text-3xl font-bold tracking-tight text-brand-ink sm:text-4xl lg:text-5xl">
+        {title}
+      </h1>
+
+      {/* Meta */}
+      {dateStr && (
+        <div class="mt-4 flex items-center gap-4 text-sm text-brand-muted border-b border-brand-border/60 pb-6">
+          <time datetime={article.published_at}>{dateStr}</time>
+          <span>•</span>
+          <span>Bahagian Komunikasi Korporat Kumpulan Yayasan Sabah</span>
+        </div>
+      )}
+
+      {/* Hero Cover Image */}
+      {article.cover_image_url && (
+        <div class="mt-8 overflow-hidden rounded-2xl border border-brand-border bg-white shadow-md">
+          <img
+            src={article.cover_image_url}
+            alt={title}
+            class="h-auto w-full object-cover"
+          />
+        </div>
+      )}
+
+      {/* Article Body */}
+      <div class="mt-10 prose prose-lg max-w-none text-slate-800 leading-relaxed">
+        <p class="text-lg font-medium leading-8 text-slate-700">
+          {article.excerpt_bm}
+        </p>
+        <div class="mt-6 space-y-6 text-base leading-7">
+          <p>{content}</p>
+        </div>
+      </div>
+
+      {/* Back button bottom */}
+      <div class="mt-12 border-t border-brand-border/60 pt-8">
+        <a href="/bm/#news" class="inline-flex items-center gap-2 rounded-xl bg-brand-maroon px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-maroon/90">
+          ← Kembali ke Berita & Acara
+        </a>
+      </div>
+    </article>
+  </main>
+  <Footer locale="bm" />
+</Base>

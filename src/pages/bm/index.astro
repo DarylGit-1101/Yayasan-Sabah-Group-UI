@@ -3,7 +3,7 @@ import Base from '../../layouts/Base.astro';
 import { useTranslations } from '../../i18n/ui';
 
 import Hero from '../../components/home/Hero.astro';
-import PopularLinks from '../../components/home/PopularLinks.astro';
+import QuickAccess from '../../components/home/QuickAccess.astro';
 import Announcements from '../../components/home/Announcements.astro';
 import LatestNews from '../../components/home/LatestNews.astro';
 import DiscoverYSG from '../../components/home/DiscoverYSG.astro';
@@ -16,7 +16,7 @@ const t = useTranslations('bm');
 <Base title={t('site.name')} description="Portal rasmi Kumpulan Yayasan Sabah - Pendidikan, perkhidmatan awam, dan pembangunan sosioekonomi di Sabah.">
   <main id="main">
     <Hero locale="bm" />
-    <PopularLinks locale="bm" />
+    <QuickAccess locale="bm" />
     <Announcements locale="bm" />
     <LatestNews locale="bm" />
     <DiscoverYSG locale="bm" />

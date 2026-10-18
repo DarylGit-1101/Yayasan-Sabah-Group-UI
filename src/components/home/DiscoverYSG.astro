@@ -24,7 +24,7 @@ const pillars = [
 ] as const;
 ---
 
-<section id="discover" class="scroll-mt-28 border-t border-brand-border bg-[#f7f3ed] py-16 sm:py-20">
+<section id="discover" class="scroll-mt-28 border-t border-brand-border/40 bg-brand-surface/10 backdrop-blur-md py-16 sm:py-20">
   <div class="mx-auto max-w-7xl px-6 lg:px-8">
     <div class="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16">
 
@@ -33,14 +33,14 @@ const pillars = [
         <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">
           {locale === 'bm' ? 'Tentang kami' : 'About us'}
         </p>
-        <h2 class="mt-2 text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">
+        <h2 class="mt-1.5 text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">
           {locale === 'bm' ? 'Mengenai Kumpulan Yayasan Sabah' : 'Discover Yayasan Sabah Group'}
         </h2>
 
         {/* Gold divider */}
         <div class="my-5 h-px w-12 bg-brand-gold" aria-hidden="true"></div>
 
-        <p class="text-sm leading-7 text-brand-muted sm:text-base">
+        <p class="leading-7 text-slate-900 sm:text-lg sm:leading-8 font-normal">
           {locale === 'bm'
             ? 'Ditubuhkan pada 1966 untuk meningkatkan kualiti hidup dan menyediakan peluang pendidikan kepada rakyat Sabah. Selama lebih enam dekad, Kumpulan Yayasan Sabah terus menjadi nadi pembangunan sosioekonomi negeri.'
             : "Established in 1966 to improve the quality of life and expand educational opportunities for the people of Sabah. For over six decades, Yayasan Sabah Group has been central to the state's socioeconomic development."}
@@ -60,7 +60,7 @@ const pillars = [
         {pillars.map(({ stat, label }) => (
           <div class="rounded-xl border border-brand-border bg-white p-5 shadow-sm">
             <p class="text-3xl font-bold tracking-tight text-brand-maroon">{stat}</p>
-            <p class="mt-1 text-xs text-brand-muted">{label[locale]}</p>
+            <p class="mt-1 text-xs font-medium text-stone-700">{label[locale]}</p>
           </div>
         ))}
       </div>

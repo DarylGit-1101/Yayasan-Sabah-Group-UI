@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --color-base: #fcfbf9;
+  --color-brand-surface: #fcfbf9;
   --color-brand-maroon: #5e2b2a;
   --color-brand-maroon-dark: #4a1f1e;
   --color-brand-maroon-light: #733635;
