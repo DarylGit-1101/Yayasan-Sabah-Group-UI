@@ -2,38 +2,61 @@ export const LOCALES = ['en', 'bm'] as const;
 export type Locale = (typeof LOCALES)[number];
 export const DEFAULT_LOCALE: Locale = 'en';
 
+/**
+ * UI Translation Dictionary (Option 3: Deliberate Hybrid Architecture)
+ * 
+ * - Dictionary (`ui.ts`): Reusable global chrome, site identity, meta,
+ *   and accessibility labels.
+ * - Nav Taxonomy (`src/data/nav.ts`): Multi-tier navigation tree with inline `{ en, bm }`.
+ * - Inline Ternaries: Page-specific rich prose, headlines with JSX styling, and one-off copy.
+ * - Dynamic Data: Supabase database collections (`news`, `announcements`, `quick_access`).
+ */
 export const UI = {
   en: {
+    // Identity & Meta
     'site.name': 'Yayasan Sabah Group',
     'site.tagline': 'Dynamic - People Oriented - Caring - Committed',
+    'site.rights': 'All rights reserved.',
+    
+    // Global Chrome & Navigation
     'nav.primary': 'Main navigation',
-    'nav.home': 'Home',
-    'nav.about': 'About',
-    'nav.activities': 'Activities',
-    'nav.directory': 'Directory',
-    'nav.media': 'Media',
-    'nav.contact': 'Contact Us',
-    'nav.search': 'Search',
-    'lang.toggle': 'Bahasa Malaysia',
-    'lang.current': 'English',
+    'topbar.languageLabel': 'Language:',
+    
+    // Accessibility
     'a11y.skipToContent': 'Skip to main content',
-    'topbar.language': 'Language',
+    'a11y.openMenu': 'Open navigation menu',
+    'a11y.closeMenu': 'Close menu',
+
+    // Shared Reusable Actions
+    'action.readMore': 'Read More',
+    'action.viewAll': 'View All',
+    'action.back': 'Back',
+    'action.search': 'Search',
+    'action.previous': 'Previous',
+    'action.next': 'Next',
   },
   bm: {
+    // Identity & Meta
     'site.name': 'Kumpulan Yayasan Sabah',
     'site.tagline': 'Dinamik - Berteraskan Rakyat - Prihatin - Berkomitmen',
+    'site.rights': 'Hak Cipta Terpelihara.',
+    
+    // Global Chrome & Navigation
     'nav.primary': 'Navigasi utama',
-    'nav.home': 'Utama',
-    'nav.about': 'Tentang Kami',
-    'nav.activities': 'Aktiviti',
-    'nav.directory': 'Direktori',
-    'nav.media': 'Media',
-    'nav.contact': 'Hubungi Kami',
-    'nav.search': 'Carian',
-    'lang.toggle': 'English',
-    'lang.current': 'Bahasa Malaysia',
+    'topbar.languageLabel': 'Bahasa:',
+    
+    // Accessibility
     'a11y.skipToContent': 'Langkau ke kandungan utama',
-    'topbar.language': 'Bahasa',
+    'a11y.openMenu': 'Buka menu navigasi',
+    'a11y.closeMenu': 'Tutup menu',
+
+    // Shared Reusable Actions
+    'action.readMore': 'Baca Selanjutnya',
+    'action.viewAll': 'Lihat Semua',
+    'action.back': 'Kembali',
+    'action.search': 'Carian',
+    'action.previous': 'Sebelumnya',
+    'action.next': 'Seterusnya',
   },
 } as const;
 

@@ -3,7 +3,9 @@
 ---
 
 <!-- Fixed background canvas: stays pinned behind all content without blocking clicks -->
-<div id="vanta-waves-bg" class="fixed inset-0 -z-10 pointer-events-none" aria-hidden="true"></div>
+<div id="vanta-waves-bg" class="fixed inset-0 -z-20 pointer-events-none" aria-hidden="true"></div>
+<!-- Global subtle 5% soft-focus blur & tint overlay applied to all current & future pages -->
+<div class="fixed inset-0 -z-10 pointer-events-none backdrop-blur-[2px] bg-white/5" aria-hidden="true"></div>
 
 <!-- Load Three.js & Vanta WAVES via CDN -->
 <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>

@@ -1,5 +1,5 @@
 ---
-import { alternateLocaleUrl, type Locale } from '../i18n/ui';
+import { alternateLocaleUrl, useTranslations, type Locale } from '../i18n/ui';
 
 interface Props {
   locale: Locale;
@@ -7,6 +7,7 @@ interface Props {
 }
 
 const { locale, pathname } = Astro.props;
+const t = useTranslations(locale);
 
 // Format current date according to locale
 const today = new Date();
@@ -35,7 +36,7 @@ const formattedDate = today.toLocaleDateString(locale === 'bm' ? 'ms-MY' : 'en-M
     <div class="flex items-center gap-5">
       <!-- Language Switch -->
       <div class="flex items-center gap-1.5">
-        <span class="text-white/80">{locale === 'bm' ? 'Bahasa:' : 'Language:'}</span>
+        <span class="text-white/80">{t('topbar.languageLabel')}</span>
         {locale === 'en' ? (
           <span class="font-bold text-brand-gold">EN</span>
           <span class="text-white/40">|</span>

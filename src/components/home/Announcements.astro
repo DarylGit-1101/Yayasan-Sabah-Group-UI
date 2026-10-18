@@ -1,5 +1,5 @@
 ---
-import type { Locale } from '../../i18n/ui';
+import { useTranslations, type Locale } from '../../i18n/ui';
 import ArticleCard from '@astroanimate/core/ArticleCard';
 import { supabase, type AnnouncementRow } from '../../db/supabase';
 
@@ -8,6 +8,7 @@ interface Props {
 }
 
 const { locale = 'en' } = Astro.props;
+const t = useTranslations(locale);
 
 // Fetch active announcements from Supabase
 let announcements: AnnouncementRow[] = [];
@@ -30,7 +31,7 @@ const displayItems = announcements;
 const showArrows = displayItems.length > 1;
 ---
 
-<section id="announcements" class="scroll-mt-28 border-y border-brand-border/40 bg-brand-surface/10 backdrop-blur-md py-12 sm:py-16">
+<section id="announcements" class="scroll-mt-28 border-y border-brand-border/40 py-12 sm:py-16">
   <div class="mx-auto max-w-7xl px-6 lg:px-8">
 
     {/* Section header with arrow controls */}
@@ -50,7 +51,7 @@ const showArrows = displayItems.length > 1;
             <button
               type="button"
               data-carousel-prev
-              aria-label={locale === 'bm' ? 'Sebelumnya' : 'Previous'}
+              aria-label={t('action.previous')}
               class="flex size-9 items-center justify-center rounded-full border border-brand-border bg-white text-brand-ink shadow-sm transition-all hover:border-brand-gold hover:text-brand-maroon active:scale-95 disabled:pointer-events-none disabled:opacity-40"
             >
               <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -60,7 +61,7 @@ const showArrows = displayItems.length > 1;
             <button
               type="button"
               data-carousel-next
-              aria-label={locale === 'bm' ? 'Seterusnya' : 'Next'}
+              aria-label={t('action.next')}
               class="flex size-9 items-center justify-center rounded-full border border-brand-border bg-white text-brand-ink shadow-sm transition-all hover:border-brand-gold hover:text-brand-maroon active:scale-95 disabled:pointer-events-none disabled:opacity-40"
             >
               <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -73,7 +74,7 @@ const showArrows = displayItems.length > 1;
           href={locale === 'bm' ? '/bm/media/' : '/media/'}
           class="ml-1 hidden text-sm font-semibold text-brand-maroon transition-colors hover:text-brand-gold-hover sm:inline-flex sm:items-center sm:gap-1"
         >
-          {locale === 'bm' ? 'Lihat Semua' : 'View All'}
+          {t('action.viewAll')}
           <span aria-hidden="true">→</span>
         </a>
       </div>

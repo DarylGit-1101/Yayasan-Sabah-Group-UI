@@ -77,7 +77,7 @@ export default function NavDrawer({ locale, pathname }: Props) {
         class="inline-flex items-center justify-center rounded-md p-2 text-brand-ink hover:bg-stone-100 lg:hidden"
         aria-expanded={open}
         aria-controls="site-drawer"
-        aria-label={open ? 'Close main menu' : 'Open main menu'}
+        aria-label={open ? t('a11y.closeMenu') : t('a11y.openMenu')}
         onClick={() => setOpen((o) => !o)}
       >
         <svg
@@ -128,7 +128,7 @@ export default function NavDrawer({ locale, pathname }: Props) {
               type="button"
               class="rounded-md p-2 text-white/80 hover:bg-white/10 hover:text-white"
               onClick={close}
-              aria-label="Close menu"
+              aria-label={t('a11y.closeMenu')}
             >
               <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
                 <path d="M6 6l12 12" />
