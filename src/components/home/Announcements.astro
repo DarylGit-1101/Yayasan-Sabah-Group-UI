@@ -1,6 +1,5 @@
 ---
 import { useTranslations, type Locale } from '../../i18n/ui';
-import ArticleCard from '@astroanimate/core/ArticleCard';
 import { supabase, type AnnouncementRow } from '../../db/supabase';
 
 interface Props {
@@ -31,12 +30,12 @@ const displayItems = announcements;
 const showArrows = displayItems.length > 1;
 ---
 
-<section id="announcements" class="scroll-mt-28 border-y border-brand-border/40 py-12 sm:py-16">
-  <div class="mx-auto max-w-7xl px-6 lg:px-8">
+<section id="announcements" class="border-y border-brand-border/40 py-12 sm:py-16">
+  <div class="w-full px-6 lg:px-8">
 
-    {/* Section header with arrow controls */}
-    <div class="flex items-end justify-between gap-4">
-      <div>
+    {/* Section header */}
+    <div class="relative mb-6">
+      <div class="text-center">
         <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">
           {locale === 'bm' ? 'Makluman' : 'Stay informed'}
         </p>
@@ -45,7 +44,7 @@ const showArrows = displayItems.length > 1;
         </h2>
       </div>
 
-      <div class="flex items-center gap-2">
+      <div class="mt-4 flex items-center justify-center gap-2 sm:absolute sm:right-0 sm:bottom-0 sm:mt-0">
         {showArrows && (
           <>
             <button
@@ -72,7 +71,7 @@ const showArrows = displayItems.length > 1;
         )}
         <a
           href={locale === 'bm' ? '/bm/media/' : '/media/'}
-          class="ml-1 hidden text-sm font-semibold text-brand-maroon transition-colors hover:text-brand-gold-hover sm:inline-flex sm:items-center sm:gap-1"
+          class="ml-1 inline-flex items-center gap-1 text-sm font-semibold text-brand-maroon transition-colors hover:text-brand-gold-hover"
         >
           {t('action.viewAll')}
           <span aria-hidden="true">→</span>
@@ -97,14 +96,26 @@ const showArrows = displayItems.length > 1;
 
             return (
               <div class="shrink-0 snap-start" role="listitem">
-                <ArticleCard
-                  title={title}
-                  description={content || ''}
-                  image={item.banner_url}
-                  href={link}
-                  actionLabel={locale === 'bm' ? 'Maklumat lanjut' : 'Find out more'}
-                  class="announcement-article-card"
-                />
+                <article class="announcement-article-card bg-white border border-brand-border overflow-hidden">
+                  <div class="media">
+                    {item.banner_url ? (
+                      <img src={item.banner_url} alt={title} loading="lazy" />
+                    ) : (
+                      <div class="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wider text-brand-maroon/50">
+                        Yayasan Sabah Group
+                      </div>
+                    )}
+                  </div>
+                  <div class="content">
+                    <div>
+                      <h3 class="title">{title}</h3>
+                      {content && <p class="description">{content}</p>}
+                    </div>
+                    <a href={link} class="action">
+                      {locale === 'bm' ? 'Maklumat lanjut' : 'Find out more'}
+                    </a>
+                  </div>
+                </article>
               </div>
             );
           })}

@@ -121,7 +121,7 @@ export default function NavDrawer({ locale, pathname }: Props) {
               <img
                 src="/images/ys-logo-white.png"
                 alt="Yayasan Sabah Group"
-                class="h-9 w-auto max-w-[200px] object-contain"
+                class="h-9 w-auto max-w-50 object-contain"
               />
             </a>
             <button

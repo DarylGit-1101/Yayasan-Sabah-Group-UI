@@ -35,6 +35,27 @@
   }
 }
 
+:root {
+  --header-height: 81px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --header-height: 110px;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--header-height);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 /* --- ambient blob float --- */
 @keyframes blob-float {
   0%, 100% {
