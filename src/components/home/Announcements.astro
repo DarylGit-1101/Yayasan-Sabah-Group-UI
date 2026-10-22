@@ -93,25 +93,44 @@ const showArrows = displayItems.length > 1;
             const title = locale === 'bm' ? (item.title_bm || item.title_en) : (item.title_en || item.title_bm);
             const content = locale === 'bm' ? (item.content_bm || item.content_en) : (item.content_en || item.content_bm);
             const link = item.attachment_url || item.banner_url || '#';
+            const isExternal = link.startsWith('http://') || link.startsWith('https://');
 
             return (
               <div class="shrink-0 snap-start" role="listitem">
-                <article class="announcement-article-card bg-white border border-brand-border overflow-hidden">
-                  <div class="media">
+                <article class="group relative flex h-96 w-88 max-w-[82vw] cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-brand-border bg-white shadow-xs transition-all duration-200 hover:border-brand-gold hover:shadow-lg">
+                  <div class="h-40 shrink-0 bg-linear-to-br from-brand-cream to-brand-sand">
                     {item.banner_url ? (
-                      <img src={item.banner_url} alt={title} loading="lazy" />
+                      <img
+                        src={item.banner_url}
+                        alt={title}
+                        width="352"
+                        height="160"
+                        loading="lazy"
+                        class="block h-full w-full object-cover"
+                      />
                     ) : (
                       <div class="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wider text-brand-maroon/50">
                         Yayasan Sabah Group
                       </div>
                     )}
                   </div>
-                  <div class="content">
+                  <div class="flex flex-1 flex-col justify-between p-5">
                     <div>
-                      <h3 class="title">{title}</h3>
-                      {content && <p class="description">{content}</p>}
+                      <h3 class="line-clamp-2 text-base font-bold leading-snug text-slate-900 transition-colors duration-200 group-hover:text-brand-maroon">
+                        {title}
+                      </h3>
+                      {content && (
+                        <p class="mt-2 line-clamp-3 text-[13.5px] leading-relaxed text-slate-500">
+                          {content}
+                        </p>
+                      )}
                     </div>
-                    <a href={link} class="action">
+                    <a
+                      href={link}
+                      target={isExternal ? '_blank' : undefined}
+                      rel={isExternal ? 'noopener noreferrer' : undefined}
+                      class="mt-4 inline-block self-start rounded-lg bg-brand-maroon px-3.5 py-2 text-[13px] font-semibold text-white no-underline transition-colors duration-200 after:absolute after:inset-0 after:z-[5] hover:bg-brand-gold focus-visible:bg-brand-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
+                    >
                       {locale === 'bm' ? 'Maklumat lanjut' : 'Find out more'}
                     </a>
                   </div>
@@ -156,111 +175,9 @@ const showArrows = displayItems.length > 1;
   </div>
 </section>
 
-{/* Styling to guarantee fixed height, brand styling, and hide scrollbars */}
-<style is:global>
+<style>
   [data-carousel-track]::-webkit-scrollbar {
     display: none;
-  }
-
-  .announcement-article-card,
-  .announcement-article-card * {
-    font-family: inherit !important;
-  }
-
-  .announcement-article-card {
-    position: relative !important;
-    cursor: pointer !important;
-    width: 22rem !important;
-    max-width: 82vw !important;
-    height: 24rem !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
-    border-radius: 1rem !important;
-    border-color: #e5e0d8 !important;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-  }
-
-  .announcement-article-card:hover {
-    border-color: #be9267 !important;
-    box-shadow: 0 12px 24px rgba(94, 43, 42, 0.08) !important;
-  }
-
-  /* Stretched link overlay: clicking anywhere on card follows link */
-  .announcement-article-card .action::after {
-    content: "" !important;
-    position: absolute !important;
-    inset: 0 !important;
-    z-index: 5 !important;
-    cursor: pointer !important;
-  }
-
-  .announcement-article-card .media {
-    height: 160px !important;
-    flex-shrink: 0 !important;
-    background: linear-gradient(135deg, #f2e9e0, #ded7c5) !important;
-  }
-
-  .announcement-article-card .media img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    display: block !important;
-  }
-
-  .announcement-article-card .content {
-    display: flex !important;
-    flex-direction: column !important;
-    flex: 1 1 0% !important;
-    justify-content: space-between !important;
-    padding: 1.25rem !important;
-  }
-
-  .announcement-article-card .title {
-    color: #0f172a !important;
-    font-size: 1rem !important;
-    line-height: 1.4 !important;
-    font-weight: 700 !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 2 !important;
-    -webkit-box-orient: vertical !important;
-    overflow: hidden !important;
-    transition: color 200ms ease !important;
-  }
-
-  .announcement-article-card:hover .title {
-    color: #5e2b2a !important;
-  }
-
-  .announcement-article-card .description {
-    color: #64748b !important;
-    font-size: 0.85rem !important;
-    line-height: 1.5 !important;
-    margin-top: 0.5rem !important;
-    display: -webkit-box !important;
-    -webkit-line-clamp: 3 !important;
-    -webkit-box-orient: vertical !important;
-    overflow: hidden !important;
-  }
-
-  .announcement-article-card .action {
-    margin-top: 1rem !important;
-    background: #5e2b2a !important;
-    color: #ffffff !important;
-    font-size: 0.8125rem !important;
-    font-weight: 600 !important;
-    border-radius: 0.5rem !important;
-    padding: 0.45rem 0.85rem !important;
-    align-self: flex-start !important;
-    text-decoration: none !important;
-    transition: background-color 200ms ease, transform 200ms ease !important;
-  }
-
-  .announcement-article-card .action:hover,
-  .announcement-article-card .action:focus-visible {
-    background: #be9267 !important;
-    outline: 2px solid #5e2b2a !important;
-    outline-offset: 2px !important;
   }
 </style>
 
@@ -275,12 +192,6 @@ const showArrows = displayItems.length > 1;
       const dotsContainer = section.querySelector<HTMLElement>('[data-carousel-dots]');
 
       if (!track) return;
-
-      // Ensure external links open in a new tab safely
-      track.querySelectorAll<HTMLAnchorElement>('a[href^="http"]').forEach((a) => {
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-      });
 
       const cards = track.querySelectorAll<HTMLElement>(':scope > *');
       if (cards.length < 2) return;

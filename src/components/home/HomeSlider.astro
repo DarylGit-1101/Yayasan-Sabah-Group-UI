@@ -1,0 +1,591 @@
+---
+import { Image } from 'astro:assets';
+import { useTranslations, type Locale } from '../../i18n/ui';
+import { supabase, type AlbumRow } from '../../db/supabase';
+import logoWhiteImg from '../../assets/ys-logo-white.png';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+const t = useTranslations(locale);
+
+let albums: AlbumRow[] = [];
+
+try {
+  const { data, error } = await supabase
+    .from('albums')
+    .select('*, album_photos(*)')
+    .eq('is_featured', true)
+    .order('sort_order', { ascending: true })
+    .order('event_date', { ascending: false });
+
+  if (data && !error) {
+    albums = (data as AlbumRow[]).map((album) => ({
+      ...album,
+      album_photos: (album.album_photos || []).sort(
+        (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.photo_id - b.photo_id
+      ),
+    }));
+  }
+} catch {
+  // Offline fallback
+}
+
+function formatDateRange(start?: string, end?: string): string {
+  if (!start) return '';
+  const fmt = new Intl.DateTimeFormat(locale === 'bm' ? 'ms-MY' : 'en-MY', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const startDate = new Date(start);
+  if (!end || end === start) return fmt.format(startDate);
+  const endDate = new Date(end);
+  return `${fmt.format(startDate)} – ${fmt.format(endDate)}`;
+}
+
+const slidesPayload = albums.map((album) => {
+  const title = locale === 'bm' ? (album.title_bm || album.title_en) : (album.title_en || album.title_bm);
+  const description = locale === 'bm'
+    ? (album.description_bm || album.description_en || '')
+    : (album.description_en || album.description_bm || '');
+  const ctaLabel = locale === 'bm'
+    ? (album.cta_label_bm || album.cta_label_en || (album.cta_url ? 'Maklumat Lanjut' : ''))
+    : (album.cta_label_en || album.cta_label_bm || (album.cta_url ? 'More Info' : ''));
+  const dateLabel = formatDateRange(album.event_date, album.event_end_date);
+  const photos = (album.album_photos || []).map((p) => ({
+    url: p.image_url,
+    caption: locale === 'bm' ? (p.caption_bm || p.caption_en || '') : (p.caption_en || p.caption_bm || ''),
+  }));
+
+  return {
+    id: album.album_id,
+    type: album.type,
+    title,
+    description,
+    dateLabel,
+    venue: album.venue || '',
+    ctaLabel,
+    ctaUrl: album.cta_url || '',
+    photos,
+  };
+});
+
+const firstSlide = slidesPayload[0];
+const firstPhoto = firstSlide?.photos[0];
+---
+
+<section id="highlights" class="relative isolate w-full bg-neutral-800">
+  {slidesPayload.length > 0 && firstSlide ? (
+    <div
+      data-home-slider
+      data-slides={JSON.stringify(slidesPayload)}
+      data-locale={locale}
+      class="relative w-full overflow-hidden bg-neutral-800"
+    >
+      {/* Top Story-Style Status Indicator Bar — Thinner (2px -> 6px on hover), white fill, blended fade background */}
+      <div
+        data-story-bar
+        class="absolute inset-x-0 top-0 z-30 flex w-full items-center gap-2 bg-linear-to-b from-neutral-800/90 via-neutral-800/45 to-transparent px-4 pt-3 pb-6 sm:px-8"
+      >
+        {slidesPayload.map((_, idx) => (
+          <button
+            type="button"
+            data-story-btn={idx}
+            aria-label={`Highlight ${idx + 1}`}
+            class="group/bar relative flex h-4 flex-1 cursor-pointer items-center focus-visible:outline-none"
+          >
+            {/* Thin 2px track that expands to 6px when hovered */}
+            <span class="relative h-0.5 w-full overflow-hidden rounded-full bg-white/25 transition-all duration-200 group-hover/bar:h-1.5 group-hover/bar:bg-white/35">
+              {/* Pure white progress fill */}
+              <span
+                data-story-fill={idx}
+                style="width: 0%;"
+                class="absolute inset-y-0 left-0 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+              />
+            </span>
+          </button>
+        ))}
+      </div>
+
+      {/* Main 1/3 Left + 2/3 Right Split — Full-bleed */}
+      <div class="grid grid-cols-1 lg:grid-cols-12 min-h-[480px] lg:min-h-[580px] xl:min-h-[640px]">
+        {/* Left 1/3 Details Panel — Unified dark grey + centered faded YSG watermark logo */}
+        <div class="relative z-20 flex flex-col justify-between bg-neutral-800 p-6 pt-12 text-white sm:p-10 sm:pt-14 lg:col-span-4 xl:p-12 xl:pt-16">
+          {/* Faded YSG Logo Watermark Enlarged to Fit Left Panel */}
+          <Image
+            src={logoWhiteImg}
+            alt=""
+            width={520}
+            height={520}
+            aria-hidden="true"
+            class="pointer-events-none select-none absolute inset-0 m-auto z-0 h-[82%] w-[82%] object-contain opacity-[0.07]"
+          />
+
+          <div data-slide-text-panel class="relative z-10 space-y-4 sm:space-y-6">
+            <div class="flex items-center justify-between gap-2">
+              <span
+                data-slide-badge
+                class="inline-flex items-center rounded-full bg-brand-gold/25 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-brand-cream border border-brand-gold/30"
+              >
+                {firstSlide.type === 'poster'
+                  ? (locale === 'bm' ? 'Notis Rasmi' : 'Official Notice')
+                  : (locale === 'bm' ? 'Sorotan Acara' : 'Event Highlight')}
+              </span>
+              <span data-slide-counter class="text-xs font-medium text-brand-cream/80 tabular-nums">
+                1 / {slidesPayload.length}
+              </span>
+            </div>
+
+            <h3 data-slide-title class="text-2xl font-bold leading-tight tracking-tight text-white sm:text-3xl">
+              {firstSlide.title}
+            </h3>
+
+            <div
+              data-slide-meta
+              class:list={[
+                'space-y-1.5 text-sm text-brand-cream/90',
+                !firstSlide.dateLabel && !firstSlide.venue && 'hidden',
+              ]}
+            >
+              <p data-slide-date class="font-semibold text-brand-gold">
+                {firstSlide.dateLabel}
+              </p>
+              <p data-slide-venue class="text-xs text-brand-cream/80">
+                {firstSlide.venue}
+              </p>
+            </div>
+
+            <p
+              data-slide-desc
+              class:list={[
+                'text-sm leading-relaxed text-brand-cream/85',
+                !firstSlide.description && 'hidden',
+              ]}
+            >
+              {firstSlide.description}
+            </p>
+
+            <div data-slide-cta-wrap class:list={['pt-2', !firstSlide.ctaUrl && 'hidden']}>
+              <a
+                data-slide-cta
+                href={firstSlide.ctaUrl || '#'}
+                class="inline-flex items-center gap-2 rounded-xl bg-brand-gold px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-brand-gold-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <span data-slide-cta-label>{firstSlide.ctaLabel}</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
+
+          {/* Bottom Controls inside Left Panel */}
+          <div class="relative z-10 mt-8 flex items-center justify-between pt-5">
+            <button
+              type="button"
+              data-slide-prev
+              aria-label={t('action.previous')}
+              class="flex size-10 items-center justify-center text-white/70 transition hover:scale-110 hover:text-brand-gold active:scale-95"
+            >
+              <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              data-slide-next
+              aria-label={t('action.next')}
+              class="flex size-10 items-center justify-center text-white/70 transition hover:scale-110 hover:text-brand-gold active:scale-95"
+            >
+              <svg class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Right 2/3 Image / Album Stage — Standardized size, fills entire right side */}
+        <div class="group/stage relative flex h-[420px] sm:h-[520px] lg:h-[600px] xl:h-[640px] w-full items-center justify-center overflow-hidden bg-neutral-800 lg:col-span-8">
+          {/* Seamless edge fade blending the left panel into the right image (Desktop: left-to-right, Mobile: top-to-bottom) */}
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-y-0 left-0 z-20 hidden w-40 lg:w-56 bg-linear-to-r from-neutral-800 via-neutral-800/75 to-transparent lg:block"
+          />
+          <div
+            aria-hidden="true"
+            class="pointer-events-none absolute inset-x-0 top-0 z-20 h-20 bg-linear-to-b from-neutral-800 to-transparent lg:hidden"
+          />
+
+          {/* Standardized <Image /> Filling the Whole Right Side */}
+          {firstPhoto ? (
+            <Image
+              data-stage-image
+              src={firstPhoto.url}
+              alt={firstSlide.title}
+              width={1280}
+              height={720}
+              class="absolute inset-0 z-10 h-full w-full object-cover object-center"
+            />
+          ) : (
+            <div class="relative z-10 text-sm text-white/60">
+              {locale === 'bm' ? 'Tiada imej tersedia' : 'No image available'}
+            </div>
+          )}
+
+          {/* Side Arrows (Appear on hover — borderless) */}
+          <button
+            type="button"
+            data-photo-prev
+            aria-label="Previous photo"
+            class:list={[
+              'absolute left-4 top-1/2 -translate-y-1/2 z-30 flex size-11 items-center justify-center text-white/80 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] opacity-0 group-hover/stage:opacity-100 focus-visible:opacity-100 transition-all duration-200 hover:text-white hover:scale-115 active:scale-95',
+              firstSlide.photos.length <= 1 && 'hidden',
+            ]}
+          >
+            <svg class="size-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <button
+            type="button"
+            data-photo-next
+            aria-label="Next photo"
+            class:list={[
+              'absolute right-4 top-1/2 -translate-y-1/2 z-30 flex size-11 items-center justify-center text-white/80 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] opacity-0 group-hover/stage:opacity-100 focus-visible:opacity-100 transition-all duration-200 hover:text-white hover:scale-115 active:scale-95',
+              firstSlide.photos.length <= 1 && 'hidden',
+            ]}
+          >
+            <svg class="size-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          {/* Optional Caption badge */}
+          <div
+            data-photo-caption-wrap
+            class:list={[
+              'absolute bottom-14 left-1/2 -translate-x-1/2 z-20 max-w-[85%] text-center rounded-full bg-black/60 px-4 py-1.5 text-xs font-medium text-white/90 backdrop-blur-md border border-white/10 shadow-sm pointer-events-none transition-opacity duration-200',
+              !firstPhoto?.caption && 'hidden',
+            ]}
+          >
+            <span data-photo-caption>{firstPhoto?.caption || ''}</span>
+          </div>
+
+          {/* Instagram/TikTok Style Centered Dots */}
+          <div
+            data-photo-dots
+            class:list={[
+              'absolute bottom-5 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 rounded-full bg-black/45 px-3 py-1.5 backdrop-blur-md border border-white/15 shadow-sm',
+              firstSlide.photos.length <= 1 && 'hidden',
+            ]}
+          >
+            {firstSlide.photos.map((_, i) => (
+              <button
+                type="button"
+                data-dot-idx={i}
+                aria-label={`Photo ${i + 1}`}
+                class:list={[
+                  'transition-all duration-300 cursor-pointer',
+                  i === 0
+                    ? 'h-2 w-5 rounded-full bg-white shadow-xs'
+                    : 'size-2 rounded-full bg-white/40 hover:bg-white/75',
+                ]}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  ) : (
+    <div class="w-full py-12 px-6 text-center text-sm text-brand-cream/70">
+      {locale === 'bm'
+        ? 'Tiada sorotan atau album diterbitkan buat masa ini.'
+        : 'No featured posters or event albums published at this time.'}
+    </div>
+  )}
+</section>
+
+<script>
+  interface SlidePhoto {
+    url: string;
+    caption: string;
+  }
+
+  interface SlideItem {
+    id: number;
+    type: 'poster' | 'event';
+    title: string;
+    description: string;
+    dateLabel: string;
+    venue: string;
+    ctaLabel: string;
+    ctaUrl: string;
+    photos: SlidePhoto[];
+  }
+
+  function initHomeSlider() {
+    document.querySelectorAll<HTMLElement>('[data-home-slider]').forEach((root) => {
+      const raw = root.dataset.slides;
+      const locale = root.dataset.locale || 'en';
+      if (!raw) return;
+
+      let slides: SlideItem[] = [];
+      try {
+        slides = JSON.parse(raw);
+      } catch {
+        return;
+      }
+      if (slides.length === 0) return;
+
+      let activeSlideIdx = 0;
+      let activePhotoIdx = 0;
+
+      const textPanelEl = root.querySelector<HTMLElement>('[data-slide-text-panel]');
+      const badgeEl = root.querySelector<HTMLElement>('[data-slide-badge]');
+      const counterEl = root.querySelector<HTMLElement>('[data-slide-counter]');
+      const titleEl = root.querySelector<HTMLElement>('[data-slide-title]');
+      const metaWrap = root.querySelector<HTMLElement>('[data-slide-meta]');
+      const dateEl = root.querySelector<HTMLElement>('[data-slide-date]');
+      const venueEl = root.querySelector<HTMLElement>('[data-slide-venue]');
+      const descEl = root.querySelector<HTMLElement>('[data-slide-desc]');
+      const ctaWrap = root.querySelector<HTMLElement>('[data-slide-cta-wrap]');
+      const ctaEl = root.querySelector<HTMLAnchorElement>('[data-slide-cta]');
+      const ctaLabelEl = root.querySelector<HTMLElement>('[data-slide-cta-label]');
+
+      const imageEl = root.querySelector<HTMLImageElement>('[data-stage-image]');
+      const photoPrevBtn = root.querySelector<HTMLButtonElement>('[data-photo-prev]');
+      const photoNextBtn = root.querySelector<HTMLButtonElement>('[data-photo-next]');
+      const photoDotsWrap = root.querySelector<HTMLElement>('[data-photo-dots]');
+      const captionWrap = root.querySelector<HTMLElement>('[data-photo-caption-wrap]');
+      const captionEl = root.querySelector<HTMLElement>('[data-photo-caption]');
+
+      const storyBtns = root.querySelectorAll<HTMLButtonElement>('[data-story-btn]');
+      const storyFills = root.querySelectorAll<HTMLElement>('[data-story-fill]');
+
+      const PHOTO_DURATION = 4500; // 4.5 seconds per photo
+      let photoStartTime = performance.now();
+      let rafId: number | null = null;
+
+      function resetTimer() {
+        photoStartTime = performance.now();
+      }
+
+      function updateProgressBars(fraction: number) {
+        const slide = slides[activeSlideIdx];
+        if (!slide) return;
+        const totalPhotos = Math.max(slide.photos.length, 1);
+        const albumProgress = Math.min(Math.max((activePhotoIdx + fraction) / totalPhotos, 0), 1);
+
+        storyFills.forEach((fill, i) => {
+          if (i < activeSlideIdx) {
+            fill.style.width = '100%';
+          } else if (i > activeSlideIdx) {
+            fill.style.width = '0%';
+          } else {
+            fill.style.width = `${(albumProgress * 100).toFixed(2)}%`;
+          }
+        });
+      }
+
+      function animatePhotoTransition(direction: number = 1) {
+        if (imageEl) {
+          imageEl.animate(
+            [
+              { opacity: 0.2, transform: `translateX(${direction * 28}px) scale(1.03)` },
+              { opacity: 1, transform: 'translateX(0px) scale(1)' },
+            ],
+            { duration: 500, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+          );
+        }
+      }
+
+      function animateSlideTextTransition(direction: number = 1) {
+        if (textPanelEl) {
+          textPanelEl.animate(
+            [
+              { opacity: 0, transform: `translateY(${direction * 14}px)` },
+              { opacity: 1, transform: 'translateY(0px)' },
+            ],
+            { duration: 420, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' }
+          );
+        }
+      }
+
+      function renderPhoto(animateDir: number = 0) {
+        const slide = slides[activeSlideIdx];
+        const photo = slide.photos[activePhotoIdx];
+        if (!photo) return;
+
+        if (imageEl) {
+          imageEl.src = photo.url;
+          imageEl.alt = photo.caption || slide.title;
+        }
+        if (animateDir !== 0) {
+          animatePhotoTransition(animateDir);
+        }
+
+        const hasMultiple = slide.photos.length > 1;
+
+        if (photoPrevBtn) photoPrevBtn.classList.toggle('hidden', !hasMultiple);
+        if (photoNextBtn) photoNextBtn.classList.toggle('hidden', !hasMultiple);
+
+        if (captionWrap && captionEl) {
+          captionWrap.classList.toggle('hidden', !photo.caption);
+          captionEl.textContent = photo.caption || '';
+        }
+
+        if (photoDotsWrap) {
+          photoDotsWrap.classList.toggle('hidden', !hasMultiple);
+          photoDotsWrap.innerHTML = slide.photos.map((_, i) => `
+            <button
+              type="button"
+              data-dot-idx="${i}"
+              aria-label="Photo ${i + 1}"
+              class="${i === activePhotoIdx ? 'h-2 w-5 rounded-full bg-white shadow-xs' : 'size-2 rounded-full bg-white/40 hover:bg-white/75'} transition-all duration-300 cursor-pointer"
+            ></button>
+          `).join('');
+
+          photoDotsWrap.querySelectorAll<HTMLButtonElement>('[data-dot-idx]').forEach((dot) => {
+            dot.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const nextIdx = Number(dot.dataset.dotIdx || 0);
+              const dir = nextIdx >= activePhotoIdx ? 1 : -1;
+              activePhotoIdx = nextIdx;
+              renderPhoto(dir);
+              resetTimer();
+            });
+          });
+        }
+      }
+
+      function renderSlide(animateDir: number = 0) {
+        const slide = slides[activeSlideIdx];
+        if (!slide) return;
+
+        if (badgeEl) {
+          badgeEl.textContent =
+            slide.type === 'poster'
+              ? locale === 'bm' ? 'Notis Rasmi' : 'Official Notice'
+              : locale === 'bm' ? 'Sorotan Acara' : 'Event Highlight';
+        }
+        if (counterEl) {
+          counterEl.textContent = `${activeSlideIdx + 1} / ${slides.length}`;
+        }
+        if (titleEl) {
+          titleEl.textContent = slide.title;
+        }
+        if (metaWrap) {
+          metaWrap.classList.toggle('hidden', !slide.dateLabel && !slide.venue);
+        }
+        if (dateEl) {
+          dateEl.textContent = slide.dateLabel;
+        }
+        if (venueEl) {
+          venueEl.textContent = slide.venue;
+        }
+        if (descEl) {
+          descEl.textContent = slide.description;
+          descEl.classList.toggle('hidden', !slide.description);
+        }
+        if (ctaWrap && ctaEl && ctaLabelEl) {
+          ctaWrap.classList.toggle('hidden', !slide.ctaUrl);
+          ctaEl.href = slide.ctaUrl || '#';
+          ctaLabelEl.textContent = slide.ctaLabel;
+        }
+
+        if (animateDir !== 0) {
+          animateSlideTextTransition(animateDir);
+        }
+        updateProgressBars(0);
+        renderPhoto(animateDir);
+      }
+
+      function nextStep() {
+        const slide = slides[activeSlideIdx];
+        const totalPhotos = slide ? slide.photos.length : 1;
+
+        if (activePhotoIdx < totalPhotos - 1) {
+          activePhotoIdx++;
+          renderPhoto(1);
+          resetTimer();
+        } else {
+          activeSlideIdx = (activeSlideIdx + 1) % slides.length;
+          activePhotoIdx = 0;
+          renderSlide(1);
+          resetTimer();
+        }
+      }
+
+      function prevStep() {
+        if (activePhotoIdx > 0) {
+          activePhotoIdx--;
+          renderPhoto(-1);
+          resetTimer();
+        } else {
+          activeSlideIdx = (activeSlideIdx - 1 + slides.length) % slides.length;
+          const prevSlide = slides[activeSlideIdx];
+          activePhotoIdx = prevSlide ? Math.max(prevSlide.photos.length - 1, 0) : 0;
+          renderSlide(-1);
+          resetTimer();
+        }
+      }
+
+      function tick(now: number) {
+        const elapsed = now - photoStartTime;
+        const fraction = Math.min(elapsed / PHOTO_DURATION, 1);
+        updateProgressBars(fraction);
+
+        if (elapsed >= PHOTO_DURATION) {
+          nextStep();
+        }
+        rafId = requestAnimationFrame(tick);
+      }
+
+      root.querySelector('[data-slide-prev]')?.addEventListener('click', () => {
+        activeSlideIdx = (activeSlideIdx - 1 + slides.length) % slides.length;
+        activePhotoIdx = 0;
+        renderSlide(-1);
+        resetTimer();
+      });
+
+      root.querySelector('[data-slide-next]')?.addEventListener('click', () => {
+        activeSlideIdx = (activeSlideIdx + 1) % slides.length;
+        activePhotoIdx = 0;
+        renderSlide(1);
+        resetTimer();
+      });
+
+      root.querySelector('[data-photo-prev]')?.addEventListener('click', () => {
+        prevStep();
+      });
+
+      root.querySelector('[data-photo-next]')?.addEventListener('click', () => {
+        nextStep();
+      });
+
+      storyBtns.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const nextIdx = Number(btn.dataset.storyBtn || 0);
+          const dir = nextIdx >= activeSlideIdx ? 1 : -1;
+          activeSlideIdx = nextIdx;
+          activePhotoIdx = 0;
+          renderSlide(dir);
+          resetTimer();
+        });
+      });
+
+      renderSlide(0);
+      resetTimer();
+      rafId = requestAnimationFrame(tick);
+
+      document.addEventListener('astro:before-swap', () => {
+        if (rafId) cancelAnimationFrame(rafId);
+      }, { once: true });
+    });
+  }
+
+  initHomeSlider();
+  document.addEventListener('astro:after-swap', initHomeSlider);
+</script>

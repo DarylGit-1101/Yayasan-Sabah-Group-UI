@@ -1,0 +1,22 @@
+---
+// Shim only: the sign-in form lives at /admin/login/.
+// Delete this file if you would rather /admin/ return a 404.
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="refresh" content="0;url=login/" />
+    <title>Redirecting · Yayasan Sabah Group</title>
+    <script is:inline>
+      window.location.replace(new URL('login/', window.location.href).href);
+    </script>
+  </head>
+  <body>
+    <p style="font-family: system-ui, sans-serif; padding: 2rem;">
+      Redirecting to <a href="login/">staff sign-in</a>…
+    </p>
+  </body>
+</html>

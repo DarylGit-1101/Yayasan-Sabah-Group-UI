@@ -3,10 +3,12 @@ import Base from '../../layouts/Base.astro';
 import { useTranslations } from '../../i18n/ui';
 
 import Hero from '../../components/home/Hero.astro';
+import HomeSlider from '../../components/home/HomeSlider.astro';
 import QuickAccess from '../../components/home/QuickAccess.astro';
 import Announcements from '../../components/home/Announcements.astro';
 import LatestNews from '../../components/home/LatestNews.astro';
 import DiscoverYSG from '../../components/home/DiscoverYSG.astro';
+import GroupLinks from '../../components/home/GroupLinks.astro';
 import HelpContact from '../../components/home/HelpContact.astro';
 import Footer from '../../components/Footer.astro';
 
@@ -16,10 +18,12 @@ const t = useTranslations('bm');
 <Base title={t('site.name')} description="Portal rasmi Kumpulan Yayasan Sabah - Pendidikan, perkhidmatan awam, dan pembangunan sosioekonomi di Sabah.">
   <main id="main">
     <Hero locale="bm" />
+    <HomeSlider locale="bm" />
     <QuickAccess locale="bm" />
     <Announcements locale="bm" />
     <LatestNews locale="bm" />
     <DiscoverYSG locale="bm" />
+    <GroupLinks locale="bm" />
     <HelpContact locale="bm" />
   </main>
   <Footer locale="bm" />

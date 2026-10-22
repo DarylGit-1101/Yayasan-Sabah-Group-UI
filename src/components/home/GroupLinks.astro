@@ -1,0 +1,188 @@
+---
+import type { Locale } from '../../i18n/ui';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = 'en' } = Astro.props;
+
+const partners = [
+  { name: 'Kolej Teknologi Yayasan Sabah (KTYS)', logo: '/images/partners/ktys.png', href: 'https://ktys.edu.my/' },
+  { name: 'University College Sabah Foundation (UCSF)', logo: '/images/partners/ucsf.png', href: 'https://www.ucsf.edu.my/' },
+  { name: 'Sabah Softwoods Berhad', logo: '/images/partners/softwoods.png', href: 'https://www.yayasansabahgroup.org.my/activities/forestry/' },
+  { name: 'Benta Wawasan Sdn. Bhd.', logo: '/images/partners/benta-wawasan.png', href: 'https://www.yayasansabahgroup.org.my/activities/agro-plantation/' },
+  { name: 'Innoprise Plantations Berhad', logo: '/images/partners/innoprise-plantations.png', href: 'https://www.yayasansabahgroup.org.my/activities/agro-plantation/' },
+  { name: 'Hap Seng Plantations', logo: '/images/partners/hap-seng-plantations.png', href: 'https://www.yayasansabahgroup.org.my/activities/agro-plantation/' },
+  { name: 'YSG Bioscape Sdn. Bhd.', logo: '/images/partners/ysg-bioscape.png', href: 'https://www.yayasansabahgroup.org.my/directory/ysg-bioscape/' },
+  { name: 'Borneo Nature Tours', logo: '/images/partners/borneo-nature-tours.png', href: 'https://www.borneonaturetours.com/' },
+  { name: 'Sabah Holidays', logo: '/images/partners/sabah-holidays.png', href: 'https://www.yayasansabahgroup.org.my/activities/tourism/' },
+  { name: 'Shangri-La Tanjung Aru Resort', logo: '/images/partners/shangrila-aru.png', href: 'https://www.shangri-la.com/kotakinabalu/tanjungaruresort/' },
+  { name: 'Sabah Nature Club', logo: '/images/partners/snc.gif', href: 'https://www.yayasansabahgroup.org.my/activities/conservation-management/' },
+];
+---
+
+<section id="group-links" class="border-t border-brand-border/40 py-16 sm:py-20">
+  <div class="w-full px-6 lg:px-8">
+
+    {/* Section header */}
+    <div class="mb-10 text-center">
+      <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">
+        {locale === 'bm' ? 'Rangkaian Kumpulan' : 'Group Network'}
+      </p>
+      <h2 class="mt-1.5 text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">
+        {locale === 'bm' ? 'Syarikat Berkaitan & Rakan Strategik' : 'Affiliates & Strategic Partners'}
+      </h2>
+    </div>
+
+    {/* Marquee container with arrow buttons */}
+    <div class="relative group/marquee" data-marquee-root>
+
+      {/* Left arrow */}
+      <button
+        type="button"
+        data-marquee-prev
+        aria-label={locale === 'bm' ? 'Undur' : 'Scroll left'}
+        class="absolute left-0 top-1/2 z-10 -translate-y-1/2 flex size-10 items-center justify-center rounded-full border border-brand-border bg-white/90 text-brand-ink shadow-md backdrop-blur-sm transition-all hover:border-brand-gold hover:text-brand-maroon active:scale-95"
+      >
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 19l-7-7 7-7"/>
+        </svg>
+      </button>
+
+      {/* Right arrow */}
+      <button
+        type="button"
+        data-marquee-next
+        aria-label={locale === 'bm' ? 'Seterusnya' : 'Scroll right'}
+        class="absolute right-0 top-1/2 z-10 -translate-y-1/2 flex size-10 items-center justify-center rounded-full border border-brand-border bg-white/90 text-brand-ink shadow-md backdrop-blur-sm transition-all hover:border-brand-gold hover:text-brand-maroon active:scale-95"
+      >
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9 5l7 7-7 7"/>
+        </svg>
+      </button>
+
+      {/* Fade edges */}
+      <div class="pointer-events-none absolute inset-y-0 left-0 z-[5] w-14 bg-gradient-to-r from-brand-surface to-transparent" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute inset-y-0 right-0 z-[5] w-14 bg-gradient-to-l from-brand-surface to-transparent" aria-hidden="true"></div>
+
+      {/* Scrollable track */}
+      <div
+        data-marquee-track
+        class="mx-12 flex gap-6 overflow-x-auto py-1"
+        style="scrollbar-width: none; -ms-overflow-style: none;"
+      >
+        {/* Original set */}
+        {partners.map((p) => (
+          <a
+            href={p.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={p.name}
+            class="group/card flex-none flex h-24 w-44 items-center justify-center rounded-xl border border-brand-border/60 bg-white px-5 py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-gold hover:shadow-md"
+          >
+            <img
+              src={p.logo}
+              alt={p.name}
+              width="160"
+              height="56"
+              loading="lazy"
+              class="max-h-14 max-w-full object-contain opacity-60 grayscale transition-all duration-300 group-hover/card:opacity-100 group-hover/card:grayscale-0"
+            />
+          </a>
+        ))}
+        {/* Duplicate set for seamless infinite loop */}
+        {partners.map((p) => (
+          <a
+            href={p.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={p.name}
+            aria-hidden="true"
+            tabindex="-1"
+            class="group/card flex-none flex h-24 w-44 items-center justify-center rounded-xl border border-brand-border/60 bg-white px-5 py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-gold hover:shadow-md"
+          >
+            <img
+              src={p.logo}
+              alt=""
+              width="160"
+              height="56"
+              loading="lazy"
+              class="max-h-14 max-w-full object-contain opacity-60 grayscale transition-all duration-300 group-hover/card:opacity-100 group-hover/card:grayscale-0"
+            />
+          </a>
+        ))}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<style>
+  [data-marquee-track]::-webkit-scrollbar {
+    display: none;
+  }
+</style>
+
+<script>
+  function initMarquee() {
+    const root = document.querySelector<HTMLElement>('[data-marquee-root]');
+    if (!root) return;
+
+    const track = root.querySelector<HTMLElement>('[data-marquee-track]');
+    const prevBtn = root.querySelector<HTMLButtonElement>('[data-marquee-prev]');
+    const nextBtn = root.querySelector<HTMLButtonElement>('[data-marquee-next]');
+
+    if (!track || !prevBtn || !nextBtn) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const step = 200; // 176px (w-44) + 24px (gap-6)
+    let isPaused = false;
+    let rafId = 0;
+    let accumulator = 0;
+
+    function tick() {
+      if (!isPaused && !prefersReducedMotion && track) {
+        accumulator += 0.6;
+        if (accumulator >= 1) {
+          const move = Math.floor(accumulator);
+          accumulator -= move;
+          track.scrollLeft += move;
+
+          const halfWidth = track.scrollWidth / 2;
+          if (track.scrollLeft >= halfWidth) {
+            track.scrollLeft -= halfWidth;
+          }
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    }
+
+    root.addEventListener('mouseenter', () => { isPaused = true; });
+    root.addEventListener('mouseleave', () => { isPaused = false; });
+    root.addEventListener('focusin', () => { isPaused = true; });
+    root.addEventListener('focusout', () => { isPaused = false; });
+
+    prevBtn.addEventListener('click', () => {
+      const halfWidth = track.scrollWidth / 2;
+      if (track.scrollLeft <= step) {
+        track.scrollLeft += halfWidth;
+      }
+      track.scrollBy({ left: -step, behavior: 'smooth' });
+    });
+
+    nextBtn.addEventListener('click', () => {
+      const halfWidth = track.scrollWidth / 2;
+      if (track.scrollLeft >= halfWidth) {
+        track.scrollLeft -= halfWidth;
+      }
+      track.scrollBy({ left: step, behavior: 'smooth' });
+    });
+
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  initMarquee();
+  document.addEventListener('astro:after-swap', initMarquee);
+</script>

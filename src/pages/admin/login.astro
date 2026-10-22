@@ -1,0 +1,236 @@
+---
+import { Image } from 'astro:assets';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import logoWhiteImg from '../../assets/ys-logo-white.png';
+import logoImg from '../../assets/ys-logo.png';
+---
+
+<AdminLayout title="Staff sign-in">
+  <main class="grid min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
+    <!-- Brand panel (desktop only) -->
+    <section
+      class="relative isolate hidden overflow-hidden bg-brand-maroon px-12 py-12 text-white lg:flex lg:flex-col lg:justify-between"
+      aria-hidden="true"
+    >
+      <div class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div class="absolute -right-24 -top-40 size-96 rounded-full bg-brand-gold/20 blur-[110px]"></div>
+        <div class="absolute -bottom-48 left-1/4 size-96 rounded-full bg-brand-maroon-light/60 blur-[110px]"></div>
+        <div
+          class="absolute inset-0 opacity-[0.07]"
+          style="background-image: radial-gradient(rgba(255,255,255,.7) .7px, transparent .7px); background-size: 24px 24px;"
+        >
+        </div>
+      </div>
+
+      <div class="relative">
+        <Image src={logoWhiteImg} alt="Yayasan Sabah Group" class="h-12 w-auto" loading="eager" />
+      </div>
+
+      <div class="relative max-w-md">
+        <span class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-brand-gold">
+          <span class="h-px w-7 bg-brand-gold"></span>Authority access
+        </span>
+        <p class="mt-5 text-4xl font-semibold leading-[1.1] tracking-tight">
+          Staff portal for<br />
+          <span class="text-brand-gold">Yayasan Sabah Group.</span>
+        </p>
+        <p class="mt-5 max-w-sm text-sm leading-6 text-white/85">
+          Sign in to manage announcements, news and public service content for the
+          official group portal.
+        </p>
+      </div>
+
+      <p class="relative text-xs text-white/55">
+        Restricted area · Authorised personnel only
+      </p>
+    </section>
+
+    <!-- Form panel -->
+    <section class="flex items-center justify-center px-6 py-12 sm:px-10">
+      <div class="w-full max-w-md">
+        <div class="mb-8 flex items-center gap-3 lg:hidden">
+          <Image src={logoImg} alt="Yayasan Sabah Group" class="h-10 w-auto" loading="eager" />
+          <span class="text-sm font-bold tracking-wide text-brand-maroon">Authority</span>
+        </div>
+
+        <div class="mb-7">
+          <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">Restricted</p>
+          <h1 class="mt-2 text-3xl font-bold tracking-tight text-brand-maroon">Staff sign-in</h1>
+          <p class="mt-2 text-sm leading-6 text-brand-muted">
+            Use your Yayasan Sabah Group staff account to continue.
+          </p>
+        </div>
+
+        <form
+          id="login-form"
+          method="post"
+          class="rounded-2xl border border-brand-border bg-white p-6 shadow-sm sm:p-7"
+          novalidate
+        >
+          <div>
+            <label for="email" class="block text-xs font-bold uppercase tracking-wider text-brand-ink">
+              Email address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              inputmode="email"
+              autocomplete="username"
+              required
+              class="mt-1 block w-full rounded-lg border border-brand-border bg-brand-surface/50 px-3.5 py-2.5 text-sm text-brand-ink placeholder:text-brand-muted/60 focus:border-brand-gold focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold"
+              placeholder="name@yayasansabahgroup.org.my"
+            />
+          </div>
+
+          <div class="mt-4">
+            <label for="password" class="block text-xs font-bold uppercase tracking-wider text-brand-ink">
+              Password
+            </label>
+            <div class="relative mt-1">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autocomplete="current-password"
+                required
+                class="block w-full rounded-lg border border-brand-border bg-brand-surface/50 py-2.5 pl-3.5 pr-12 text-sm text-brand-ink placeholder:text-brand-muted/60 focus:border-brand-gold focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold"
+                placeholder="Enter your password"
+              />
+              <button
+                id="toggle-password"
+                type="button"
+                aria-label="Show password"
+                aria-pressed="false"
+                class="absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-lg text-brand-muted transition-colors hover:text-brand-maroon focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-maroon"
+              >
+                <svg
+                  class="size-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <p
+            id="login-error"
+            role="alert"
+            aria-live="polite"
+            class="mt-4 hidden rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-800"
+          ></p>
+
+          <button
+            id="login-submit"
+            type="submit"
+            class="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-brand-maroon px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-brand-maroon-dark focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon disabled:opacity-60"
+          >
+            <span id="login-label">Sign in</span>
+            <svg
+              id="login-spinner"
+              class="hidden size-4 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 0 1 8-8v8H4Z"></path>
+            </svg>
+          </button>
+        </form>
+
+        <p class="mt-6 text-xs leading-5 text-brand-muted">
+          Accounts are issued by the portal administrator. If you need access,
+          contact your system administrator.
+        </p>
+      </div>
+    </section>
+  </main>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../db/supabase';
+
+  const form = document.getElementById('login-form') as HTMLFormElement | null;
+  const email = document.getElementById('email') as HTMLInputElement | null;
+  const password = document.getElementById('password') as HTMLInputElement | null;
+  const toggle = document.getElementById('toggle-password') as HTMLButtonElement | null;
+  const errorBox = document.getElementById('login-error');
+  const submit = document.getElementById('login-submit') as HTMLButtonElement | null;
+  const label = document.getElementById('login-label');
+  const spinner = document.getElementById('login-spinner');
+
+  // Derive the authority root from the current path so the folder can be renamed
+  // (for example to an unlisted slug) without touching this script.
+  const root = window.location.pathname.replace(/\/login\/?$/, '');
+  const next = `${root}/dashboard/`;
+
+  function showError(message: string) {
+    if (!errorBox) return;
+    errorBox.textContent = message;
+    errorBox.classList.remove('hidden');
+  }
+
+  function clearError() {
+    if (!errorBox) return;
+    errorBox.textContent = '';
+    errorBox.classList.add('hidden');
+  }
+
+  function setLoading(loading: boolean) {
+    if (submit) submit.disabled = loading;
+    if (label) label.textContent = loading ? 'Signing in…' : 'Sign in';
+    spinner?.classList.toggle('hidden', !loading);
+  }
+
+  // Already signed in? Skip the form.
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    if (session) window.location.replace(next);
+  });
+
+  toggle?.addEventListener('click', () => {
+    if (!password) return;
+    const reveal = password.type === 'password';
+    password.type = reveal ? 'text' : 'password';
+    toggle.setAttribute('aria-pressed', String(reveal));
+    toggle.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+  });
+
+  form?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    clearError();
+
+    if (!import.meta.env.PUBLIC_SUPABASE_URL) {
+      showError('Authentication is not configured. Set PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY.');
+      return;
+    }
+
+    if (!email?.value.trim() || !password?.value) {
+      showError('Enter your email address and password.');
+      return;
+    }
+
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.value.trim(),
+      password: password.value,
+    });
+
+    if (error) {
+      showError(error.message);
+      setLoading(false);
+      return;
+    }
+
+    window.location.replace(next);
+  });
+</script>

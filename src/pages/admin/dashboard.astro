@@ -1,0 +1,90 @@
+---
+import { Image } from 'astro:assets';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import logoImg from '../../assets/ys-logo.png';
+---
+
+<AdminLayout title="Dashboard">
+  <!-- Shown until the session check resolves -->
+  <div id="admin-gate" class="grid min-h-screen place-items-center px-6 text-sm text-brand-muted">
+    Checking your session…
+  </div>
+
+  <!-- Hidden until a valid session is confirmed -->
+  <div id="admin-content" class="hidden min-h-screen">
+    <header class="border-b border-brand-border bg-white">
+      <div class="flex w-full items-center justify-between gap-4 px-6 py-4 lg:px-8">
+        <a href="/" class="flex items-center gap-3">
+          <Image src={logoImg} alt="Yayasan Sabah Group" class="h-9 w-auto" loading="eager" />
+          <span class="hidden text-sm font-bold tracking-wide text-brand-maroon sm:inline">Authority</span>
+        </a>
+
+        <div class="flex items-center gap-3 text-sm">
+          <span id="admin-email" class="hidden text-brand-muted sm:inline"></span>
+          <button
+            id="sign-out"
+            type="button"
+            class="rounded-lg border border-brand-border px-3 py-1.5 font-semibold text-brand-maroon transition-colors hover:border-brand-gold hover:text-brand-gold-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="w-full px-6 py-10 lg:px-8">
+      <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">Authority</p>
+      <h1 class="mt-1.5 text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">Dashboard</h1>
+      <p class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
+        You are signed in. Content panels will be added here next.
+      </p>
+
+      <div class="mt-8 rounded-xl border border-dashed border-brand-border bg-white/60 p-8 text-center">
+        <p class="text-sm font-semibold text-brand-ink">No panels yet</p>
+        <p class="mx-auto mt-1 max-w-md text-sm text-brand-muted">
+          The feedback inbox, news table and announcements form are the planned
+          next additions to this area.
+        </p>
+      </div>
+    </main>
+  </div>
+</AdminLayout>
+
+<script>
+  import { supabase } from '../../db/supabase';
+
+  const gate = document.getElementById('admin-gate');
+  const content = document.getElementById('admin-content');
+  const email = document.getElementById('admin-email');
+
+  // Dashboard lives one level below the authority root.
+  const root = window.location.pathname.replace(/\/dashboard\/?$/, '');
+
+  async function boot() {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      window.location.replace(`${root}/login/`);
+      return;
+    }
+
+    if (email) {
+      email.textContent = session.user.email ?? '';
+      email.classList.remove('hidden');
+    }
+
+    gate?.remove();
+    content?.classList.remove('hidden');
+  }
+
+  document.getElementById('sign-out')?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    window.location.replace(`${root}/login/`);
+  });
+
+  boot().catch(() => {
+    window.location.replace(`${root}/login/`);
+  });
+</script>

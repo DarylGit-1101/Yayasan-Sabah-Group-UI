@@ -1,31 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
-import { supabase, type QuickLinkRow } from '../db/supabase';
+import type { QuickLinkRow } from '../types/quick-link.db';
 import { NAV } from '../data/nav';
 import { localeHref, type Locale } from '../i18n/ui';
 
 interface Props {
   locale: Locale;
+  quickLinks?: Pick<QuickLinkRow, 'title_en' | 'title_bm' | 'href_en' | 'href_bm'>[];
 }
 
-export default function SiteSearch({ locale }: Props) {
+export default function SiteSearch({ locale, quickLinks = [] }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
-  const [quickLinks, setQuickLinks] = useState<QuickLinkRow[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-
-  // Fetch quick links dynamically from Supabase database
-  useEffect(() => {
-    supabase
-      .from('quick_links')
-      .select('id, title_en, title_bm, href_en, href_bm, available')
-      .eq('available', true)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setQuickLinks(data as QuickLinkRow[]);
-        }
-      });
-  }, []);
 
   const items = useMemo(() => {
     const navigation = NAV.flatMap((item) => [
@@ -81,13 +68,13 @@ export default function SiteSearch({ locale }: Props) {
       setTimeout(() => inputRef.current?.focus(), 50);
     } else {
       document.body.style.overflow = '';
-      triggerRef.current?.focus();
     }
   }, [open]);
 
   const close = () => {
     setOpen(false);
     setQuery('');
+    triggerRef.current?.focus();
   };
 
   return (

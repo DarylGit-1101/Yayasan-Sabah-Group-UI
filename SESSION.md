@@ -1,7 +1,8 @@
 # Session Record — YSG Website Rebuild
 
 > Working notes for continuing this project.
-> **Current brief: the landing page (§4).** Research behind it: §5. Navbar: §3.
+> **Landing page: BUILT (§4).** Research behind it: §5. Navbar: §3.
+> **Last reconciled with the code: 20 Oct 2026.**
 
 ---
 
@@ -50,22 +51,26 @@ one slideshow image 8.88 MB, 2.4 MB autoplay hero video).
 
 ```
 Branch:  main
-HEAD:    d0e3e99 "navbar"      (site chrome + i18n + nav)
-Parent:  f219347 "update"      (deleted AGENTS.md, CLAUDE.md; added .gitignore)
+HEAD:    1f68935 "Hero update and stuff"
+Parent:  b6f76ec "background blur"
 Root:    7420ee5 "Initial commit from Astro"
 ```
 
-**Uncommitted:**
-- `M src/components/Header.astro` — the navbar pin-open interaction (§3)
-- `?? docs/` — `docs/research/YSG-WEBSITE-ANALYSIS.md`, the research deliverable
-- `?? SESSION.md` — this file
+**Uncommitted (20 Oct 2026):**
+- `M src/components/home/LatestNews.astro` — section header spacing, divider removed
+- `M src/components/home/QuickAccess.astro` — grid 3/4-col → 5-col
+- `M src/components/home/QuickAccessCard.astro` — smaller cards, tighter type
+- `M src/pages/index.astro`, `M src/pages/bm/index.astro` — mount `GroupLinks`
+- `?? src/components/home/GroupLinks.astro` — affiliates marquee
+- `?? public/images/partners/` — 11 partner logos
 
-Build: `npm run check` → 0 errors. `npm run build` → static, 2 pages
-(`/index.html`, `/bm/index.html`).
+Build: `npm run check` → 0 errors, 0 warnings, 3 hints (unused symbols).
+`npm run build` → static, **10 routes**: `/`, `/bm/`, `/contact/`,
+`/bm/contact/`, and 3 news articles × EN/BM.
 
 ---
 
-## 3. Navbar interaction (this session's work)
+## 3. Navbar interaction (earlier session; committed in `d0e3e99`)
 
 **Status:** implemented, type-checks and builds clean. Hover rendering **not**
 empirically verified — see the harness caveat below.
@@ -138,9 +143,9 @@ the nav.** Options put to the user:
 
 ---
 
-## 4. ACTIVE BRIEF — Landing page (the service hub)
+## 4. Landing page (the service hub) — BUILT
 
-**Status: NOT STARTED. Brief received 13 Oct 2026, no code written yet.**
+**Status: implemented.** Brief received 13 Oct 2026; code reconciled 20 Oct 2026.
 
 Full spec was supplied by the user (duplicated in conversation, ~8 sections). Summary:
 
@@ -148,22 +153,96 @@ Full spec was supplied by the user (duplicated in conversation, ~8 sections). Su
 > rename or duplicate the navbar.** Feel: official Sabah government-linked org —
 > professional, trustworthy, accessible. Usability over decoration.
 
-### Required sections, in order
-1. Existing navbar — **preserve untouched**
-2. **A. Hero / welcome** — Sabah visual (Menara Tun Mustapha etc.), short heading, one
-   primary CTA to services. *No invented slogans, claims or statistics.*
-3. **B. Find a Service** — search field, placeholder *"What are you looking for?"*.
-   UI first; can wire real search later. (Good island candidate if it needs to filter.)
-4. **C. Popular Services** — **most important section.** Card grid: icon, title,
-   short description, visible action, verified link. Six categories (§5 below).
-   Must sit **high on the page** — no scrolling past corporate news to reach services.
-5. **D. Important Announcements** — title + **publication date** + description,
-   deadline highlighted, link. *Must be structured/CMS-ready.* No fabricated deadlines.
-6. **E. Latest News & Events** — ~3 items, thumbnail + title + date + excerpt + link.
-   Visually engaging but **secondary** to services.
-7. **F. Discover YSG** — mission/objectives + business areas from official content only.
-8. **G. Help & Contact** — FAQ, contact, directory, feedback, support channels.
-9. Existing footer (none exists yet — see §7).
+### Sections, in order — implementation map
+
+| # | Brief section | File | State |
+|---|---|---|---|
+| 1 | Existing navbar — preserve untouched | `src/components/Header.astro` | untouched since §3 |
+| 2 | **A. Hero / welcome** | `home/Hero.astro` | done — video hero, 2 CTAs, "since 1966" card |
+| 3 | ~~**B. Find a Service**~~ | — | **DROPPED — see below** |
+| 4 | **C. Popular Services** | `home/QuickAccess.astro` + `home/QuickAccessCard.astro` | done — Supabase-driven, 5-col grid |
+| 5 | **D. Important Announcements** | `home/Announcements.astro` | done — carousel; **no date/deadline yet** |
+| 6 | **E. Latest News & Events** | `home/LatestNews.astro` + `pages/media/news/[slug].astro` (EN/BM) | done |
+| 7 | **F. Discover YSG** | `home/DiscoverYSG.astro` | done — copy + 4 stat tiles |
+| 8 | **G. Help & Contact** | `home/HelpContact.astro` | done — 2 of the 5 channels |
+| 9 | Footer | `src/components/Footer.astro` | done — built after the brief |
+
+### Section B — dropped (confirmed 20 Oct 2026)
+
+The landing-page search field was **removed deliberately**; it was not forgotten.
+Service discovery is handled by:
+
+- the hero CTA **"Quick Start" → `#services`**,
+- the **Quick Access grid** immediately below the hero,
+- the header **`SiteSearch`** island for free-text lookup.
+
+**Do not re-add a landing-page search section** without a new decision from the user.
+
+### The design pattern — follow this on every new page
+
+The landing page established a repeatable house style. New sections should reuse it
+rather than invent local variants.
+
+**1. Section shell** — full-width, separated by a hairline rule, not a container:
+
+```astro
+<section id="…" class="border-t border-brand-border/40 py-16 sm:py-20">
+  <div class="w-full px-6 lg:px-8">
+```
+
+**2. Section header** — the same three-part lockup in all six sections:
+
+```astro
+<p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">Eyebrow</p>
+<h2 class="mt-1.5 text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">Title</h2>
+```
+
+The optional "View all →" link is parked bottom-right at `sm:` using
+`sm:absolute sm:right-0 sm:bottom-0`.
+
+**3. Card** — white on the cream page; `rounded-xl`, `border-brand-border`,
+`shadow-sm` → `hover:-translate-y-1 hover:border-brand-gold hover:shadow-md`;
+image `scale-[1.02] → scale-110` behind a white gradient fade; title turns maroon;
+circular arrow chip bottom-right. Same DNA in `QuickAccessCard`, `LatestNews`,
+`HelpContact`, `GroupLinks`.
+
+**4. Data** — query Supabase in the component frontmatter at build time, always
+`try/catch`, cast to the row type, render a dashed empty state:
+
+```ts
+const { data, error } = await supabase.from('…').select('*').order(…);
+if (data && !error) items = data as XRow[];
+```
+
+Row types live in `src/types/*.db.ts`, re-exported by `src/db/supabase.ts`.
+
+**5. i18n** — the "deliberate hybrid" documented in `src/i18n/ui.ts`: the `UI`
+dictionary for chrome/actions, `data/nav.ts` inline `{ en, bm }` for taxonomy,
+inline ternaries for page copy, `_en`/`_bm` DB columns for content. Every home
+component takes `{ locale?: Locale }` defaulting to `'en'`; the two homepage
+files are the same composition with the locale flipped.
+
+**6. Scripts** — colocated vanilla `<script>`, an `initX()` function plus an
+`astro:after-swap` listener. **No ClientRouter is installed**, so that listener
+never fires today. Only `GroupLinks` implements teardown (`_cleanupMarquee`).
+
+### Deviations from the brief (known, not accidental)
+
+- **C** is image-led, not icon-led, and does **not** group the six research
+  categories from §5 — it renders the flat `quick_links` set from Supabase.
+- **D** does **not** render `published_at`, and never reads `expires_at`
+  (the column exists in `AnnouncementRow` but is referenced nowhere). The CTA
+  falls back to `'#'` when a row has no attachment/banner.
+- **D** is styled with a ~100-line global `<style>` block using ~50 `!important`
+  rules and raw hex values — the only section that opts out of Tailwind.
+- **F** surfaces derived research figures ("42+ public services", "3 education
+  institutions") as facts. The brief forbade invented statistics.
+- **G** implements 2 of the 5 requested channels, and its FAQ link points at
+  `/media/faq/`, which does not exist yet.
+- **News detail** uses `prose prose-lg`, but `@tailwindcss/typography` is not
+  installed — those classes are inert.
+- **`GroupLinks`** hardcodes production absolute URLs for internal pages.
+- **`VantaBackground`** loads Three.js + Vanta from two CDNs on every page.
 
 ### Hard constraints
 - **Preserve the existing navbar.** Don't redesign, rename, replace or duplicate it.
@@ -280,16 +359,22 @@ HTTP 200 but is orphaned)** · Other Investments → *renamed* **Manufacturing**
 | `src/components/Header.astro` | **site chrome + the pin-open interaction** |
 | `src/components/Topbar.astro` | maroon topbar tier |
 | `src/islands/NavDrawer.tsx` | mobile drawer (Preact island, `client:media`) |
-| `src/pages/index.astro`, `src/pages/bm/index.astro` | placeholder pages only |
+| `src/pages/index.astro`, `src/pages/bm/index.astro` | landing-page composition (same 7 sections, locale flipped) |
+| `src/components/home/*.astro` | the landing-page sections (§4) |
+| `src/components/Footer.astro` | 4-column footer — did not exist when the brief was written |
+| `src/components/FeedbackForm.astro` | contact form; inserts into Supabase `feedback` |
+| `src/db/supabase.ts` | Supabase client + re-exports `src/types/*` |
+| `src/types/*.db.ts` | row types: news, announcements, quick links, documents, feedback… |
+| `src/pages/media/news/[slug].astro`, `src/pages/bm/media/news/[slug].astro` | DB-driven news detail, EN + BM |
 | `astro.config.mjs` | site URL + i18n config (en default, `/bm/`) |
-| `docs/research/YSG-WEBSITE-ANALYSIS.md` | full research deliverable |
+| `docs/research/YSG-WEBSITE-ANALYSIS.md` | full research deliverable (still carries the stale dates — §1) |
 
 ### Design tokens
 Defined in `src/styles/global.css` via Tailwind v4 `@theme`:
 
 | Token | Value |
 |---|---|
-| `--color-base` | `#fcfbf9` |
+| `--color-brand-surface` | `#fcfbf9` — **not** `--color-base`, which no longer exists |
 | `--color-brand-maroon` | `#5e2b2a` |
 | `--color-brand-maroon-dark` | `#4a1f1e` |
 | `--color-brand-maroon-light` | `#733635` |
@@ -307,18 +392,22 @@ documented as a decision at some point.
 
 ---
 
-## 7. What's left to build (~95% of the site)
+## 7. What's left to build (~90% of the site)
 
-Only the chrome exists. Still needed:
+Chrome, the landing page, `/contact/` and news detail pages exist. Still needed:
 
-- **Homepage** (currently a placeholder)
 - **64 content pages** — About (20), Activities + Directory (32), Media + utility (21)
-- **11 utility pages**
-- **Footer**
+- **11 utility pages** — including every internal link the landing page emits
+- **Dead internal links** — `/about/`, `/media/`, `/media/faq/`, `/media/news/`,
+  `/media/tender-notice/`, `/facilities/`, `/borneo-research-library/`,
+  `/privacy-policy/`, `/disclaimer/`, `/bppp/…` all 404 on a static build
 - **Data layer** — 11 media collections requiring a build-time source:
   press releases (2014→), photo albums (92 in 2026, ~845 images), publications back to
   **1977**, calendar (~117 events/yr), videos, annual reports, corporate ads, tender
   notices, awards, milestones, announcements, contact form.
+  News, announcements and quick links are live in Supabase; the rest are not.
+  **The Supabase schema is not in the repo**, and `.env` is gitignored — a clean
+  clone builds empty sections against `placeholder.supabase.co` with no error.
 
 ### Content bugs found in the legacy site (carry over carefully)
 - BM homepage duplicates every event 14–16× (PESAWI ×51)
@@ -352,16 +441,23 @@ already up on 4321 — just use it.
 
 ## 9. Next moves (in rough priority)
 
-1. **Build the landing page (§4)** — the active brief. Sections A–G, navbar untouched.
-   Design decision to settle first: is Section B search an island or a plain `<script>`?
-2. **Answer the nav open question** (§3) — does the section index stay reachable?
-3. **Settle the PTPS question** (§5) — moves the scholarship count 42 → 48, and decides
-   whether Section C lists 1 or 6 education-aid cards.
-4. Correct `docs/research/YSG-WEBSITE-ANALYSIS.md` — `ysnet.org.my` domain + 2009 ASP date.
-5. Eyeball the navbar hover states in a real browser (§3 harness caveat)
-6. Commit the uncommitted work (`Header.astro` + `docs/` + `SESSION.md`)
-7. Footer (spec §4.9 assumes one exists — it doesn't yet)
-8. Source hero imagery — Menara Tun Mustapha / Sabah visual (§5)
-9. Content collections for the 11 media collections + announcements (spec §D must be CMS-ready)
-10. Redirect map for `.cfm` URLs; also decide the orphaned Fisheries page (§5)
-11. Start on the 64 content pages
+1. **Commit the uncommitted work** — `GroupLinks.astro` + `public/images/partners/`
+   + the card/grid tweaks. It is the only untracked feature in the tree.
+2. **Announcements: show date + deadline** (§4) — render `published_at`, highlight
+   `expires_at`, and stop falling back to `'#'`. This is the last unmet line of the
+   original brief.
+3. **Fix or stub the 10 dead internal links** (§7) — the landing page currently
+   dead-ends on "All news", "View all announcements" and its FAQ card.
+4. **Answer the nav open question** (§3) — does the section index stay reachable?
+5. **Settle the PTPS question** (§5) — moves the scholarship count 42 → 48, and decides
+   whether C should list 1 or 6 education-aid cards.
+6. **Make builds reproducible** — commit the Supabase schema (or a seed/migration),
+   and fail loudly instead of falling back to `placeholder.supabase.co` (§7).
+7. Correct `docs/research/YSG-WEBSITE-ANALYSIS.md` — `ysnet.org.my` domain + 2009 ASP date.
+8. Eyeball the navbar hover states in a real browser (§3 harness caveat)
+9. Decide on `VantaBackground` (two CDN scripts on every page) and on the missing
+   `@tailwindcss/typography` plugin (§4 deviations)
+10. Source hero photography — Menara Tun Mustapha / Sabah visual (§5); the hero
+    currently uses the legacy intro video instead
+11. Redirect map for `.cfm` URLs; also decide the orphaned Fisheries page (§5)
+12. Start on the 64 content pages

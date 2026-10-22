@@ -15,10 +15,13 @@ const isClosed   = item.available === false;
 const title = locale === 'bm' ? (item.title_bm || item.title_en) : (item.title_en || item.title_bm);
 const href = locale === 'bm' ? (item.href_bm || item.href_en) : (item.href_en || item.href_bm);
 
-// Dynamic local image resolution via Astro's asset pipeline
-const localImages = import.meta.glob<{ default: ImageMetadata }>('../../assets/quick-links/*.{jpeg,jpg,png,webp,avif}');
+// Eagerly resolve local images once and index by lowercase filename/stem
+const localImages = import.meta.glob<{ default: ImageMetadata }>(
+  '../../assets/quick-links/*.{jpeg,jpg,png,webp,avif}',
+  { eager: true }
+);
 
-let localImagePromise: (() => Promise<{ default: ImageMetadata }>) | null = null;
+let localImageMetadata: ImageMetadata | null = null;
 let isRemoteImage = false;
 let remoteImageUrl: string | null = null;
 
@@ -27,29 +30,24 @@ if (item.image_url) {
     isRemoteImage = true;
     remoteImageUrl = item.image_url;
   } else {
-    const rawFilename = item.image_url.split('/').pop() || '';
-    const matchedKey = Object.keys(localImages).find((path) => {
-      const base = path.split('/').pop() || '';
-      return (
-        base.toLowerCase() === rawFilename.toLowerCase() ||
-        base.replace(/\.[^/.]+$/, '').toLowerCase() === rawFilename.replace(/\.[^/.]+$/, '').toLowerCase()
-      );
-    });
-
-    if (matchedKey) {
-      localImagePromise = localImages[matchedKey];
+    const rawFilename = (item.image_url.split('/').pop() || '').toLowerCase();
+    const rawStem = rawFilename.replace(/\.[^/.]+$/, '');
+    for (const [path, mod] of Object.entries(localImages)) {
+      const base = (path.split('/').pop() || '').toLowerCase();
+      if (base === rawFilename || base.replace(/\.[^/.]+$/, '') === rawStem) {
+        localImageMetadata = mod.default;
+        break;
+      }
     }
   }
 }
-
-const localImageMetadata = localImagePromise ? (await localImagePromise()).default : null;
 ---
 
 <a
   href={href}
   target={isExternal ? '_blank' : undefined}
   rel={isExternal ? 'noopener noreferrer' : undefined}
-  class="group relative flex h-full w-full flex-col justify-between overflow-hidden rounded-2xl border border-brand-border bg-white shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:border-brand-gold hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
+  class="group relative flex h-full w-full flex-col justify-between overflow-hidden rounded-xl border border-brand-border bg-white shadow-sm transition-all duration-200 ease-out hover:-translate-y-1 hover:border-brand-gold hover:shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
 >
 
   {/* Card Photo processed via Astro <Image /> */}
@@ -77,6 +75,8 @@ const localImageMetadata = localImagePromise ? (await localImagePromise()).defau
         <img
           src={item.image_url.startsWith('/') ? item.image_url : `/images/quick-links/${item.image_url}`}
           alt={title}
+          width="400"
+          height="250"
           class="h-full w-full scale-[1.02] object-cover transition-transform duration-500 ease-out will-change-transform group-hover:scale-110"
           style="backface-visibility: hidden;"
           loading="lazy"
@@ -84,20 +84,20 @@ const localImageMetadata = localImagePromise ? (await localImagePromise()).defau
       ) : null}
       {/* Gradient fade — tall enough to cover the zoom margin */}
       <div
-        class="pointer-events-none absolute inset-x-0 -bottom-px h-24 bg-linear-to-t from-white from-10% via-white/90 via-40% to-transparent"
+        class="pointer-events-none absolute inset-x-0 -bottom-px h-16 bg-linear-to-t from-white from-10% via-white/90 via-40% to-transparent"
         aria-hidden="true"
       ></div>
     </div>
   )}
 
-  <div class="relative z-10 -mt-4 flex flex-1 flex-col justify-between bg-white p-5 pt-0">
+  <div class="relative z-10 -mt-3.5 flex flex-1 flex-col justify-between bg-white p-3.5 pt-0">
     {/* Card title - dark high-contrast text */}
-    <p class="text-sm font-bold leading-snug text-slate-900 transition-colors duration-200 group-hover:text-brand-maroon sm:text-base">
+    <p class="text-xs sm:text-sm font-bold leading-snug text-slate-900 transition-colors duration-200 group-hover:text-brand-maroon">
       {title}
     </p>
 
     {/* Badges & Action Footer */}
-    <div class="mt-4 flex items-center justify-between border-t border-brand-border/60 pt-3">
+    <div class="mt-3 flex items-center justify-between border-t border-brand-border/60 pt-2.5">
       <div class="flex flex-wrap gap-1.5">
         {isClosed && (
           <span class="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold leading-none text-red-700 ring-1 ring-inset ring-red-600/20">

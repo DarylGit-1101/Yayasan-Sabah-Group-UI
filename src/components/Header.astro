@@ -14,6 +14,19 @@ import {
 const locale = localeFromPathname(Astro.url.pathname);
 const t = useTranslations(locale);
 const pathname = Astro.url.pathname;
+
+import { supabase, type QuickLinkRow } from '../db/supabase';
+
+let quickLinks: Pick<QuickLinkRow, 'title_en' | 'title_bm' | 'href_en' | 'href_bm'>[] = [];
+try {
+  const { data } = await supabase
+    .from('quick_links')
+    .select('title_en, title_bm, href_en, href_bm')
+    .eq('available', true);
+  if (data) quickLinks = data;
+} catch {
+  // Offline fallback
+}
 ---
 
 <header class="sticky top-0 z-40 w-full bg-white shadow-xs">
@@ -144,7 +157,7 @@ const pathname = Astro.url.pathname;
 
       </nav>
 
-      <SiteSearch client:load locale={locale} />
+      <SiteSearch client:idle locale={locale} quickLinks={quickLinks} />
 
       <!-- Mobile Navigation Hamburger (Drawer Trigger) -->
       <NavDrawer client:media="(max-width: 1023px)" locale={locale} pathname={pathname} />
