@@ -5,7 +5,7 @@ import logoWhiteImg from '../../assets/ys-logo-white.png';
 import logoImg from '../../assets/ys-logo.png';
 ---
 
-<AdminLayout title="Staff sign-in">
+<AdminLayout title="Staff Sign-In">
   <main class="grid min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,30rem)]">
     <!-- Brand panel (desktop only) -->
     <section
@@ -55,9 +55,9 @@ import logoImg from '../../assets/ys-logo.png';
 
         <div class="mb-7">
           <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">Restricted</p>
-          <h1 class="mt-2 text-3xl font-bold tracking-tight text-brand-maroon">Staff sign-in</h1>
+          <h1 class="mt-2 text-3xl font-bold tracking-tight text-brand-maroon">Staff Sign-In</h1>
           <p class="mt-2 text-sm leading-6 text-brand-muted">
-            Use your Yayasan Sabah Group staff account to continue.
+            Use your Yayasan Sabah Group admin account to continue.
           </p>
         </div>
 
@@ -68,18 +68,17 @@ import logoImg from '../../assets/ys-logo.png';
           novalidate
         >
           <div>
-            <label for="email" class="block text-xs font-bold uppercase tracking-wider text-brand-ink">
-              Email address
+            <label for="username" class="block text-xs font-bold uppercase tracking-wider text-brand-ink">
+              Username
             </label>
             <input
-              id="email"
-              name="email"
-              type="email"
-              inputmode="email"
+              id="username"
+              name="username"
+              type="text"
               autocomplete="username"
               required
               class="mt-1 block w-full rounded-lg border border-brand-border bg-brand-surface/50 px-3.5 py-2.5 text-sm text-brand-ink placeholder:text-brand-muted/60 focus:border-brand-gold focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-gold"
-              placeholder="name@yayasansabahgroup.org.my"
+              placeholder="Enter your admin username"
             />
           </div>
 
@@ -159,8 +158,10 @@ import logoImg from '../../assets/ys-logo.png';
 <script>
   import { supabase } from '../../db/supabase';
 
+  const STORAGE_KEY = 'ysg_admin_session';
+
   const form = document.getElementById('login-form') as HTMLFormElement | null;
-  const email = document.getElementById('email') as HTMLInputElement | null;
+  const username = document.getElementById('username') as HTMLInputElement | null;
   const password = document.getElementById('password') as HTMLInputElement | null;
   const toggle = document.getElementById('toggle-password') as HTMLButtonElement | null;
   const errorBox = document.getElementById('login-error');
@@ -168,8 +169,6 @@ import logoImg from '../../assets/ys-logo.png';
   const label = document.getElementById('login-label');
   const spinner = document.getElementById('login-spinner');
 
-  // Derive the authority root from the current path so the folder can be renamed
-  // (for example to an unlisted slug) without touching this script.
   const root = window.location.pathname.replace(/\/login\/?$/, '');
   const next = `${root}/dashboard/`;
 
@@ -192,9 +191,17 @@ import logoImg from '../../assets/ys-logo.png';
   }
 
   // Already signed in? Skip the form.
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    if (session) window.location.replace(next);
-  });
+  try {
+    const existing = sessionStorage.getItem(STORAGE_KEY);
+    if (existing) {
+      const parsed = JSON.parse(existing);
+      if (parsed && parsed.admin_id && parsed.admin_username) {
+        window.location.replace(next);
+      }
+    }
+  } catch {
+    sessionStorage.removeItem(STORAGE_KEY);
+  }
 
   toggle?.addEventListener('click', () => {
     if (!password) return;
@@ -213,16 +220,16 @@ import logoImg from '../../assets/ys-logo.png';
       return;
     }
 
-    if (!email?.value.trim() || !password?.value) {
-      showError('Enter your email address and password.');
+    if (!username?.value.trim() || !password?.value) {
+      showError('Enter your username and password.');
       return;
     }
 
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: email.value.trim(),
-      password: password.value,
+    const { data, error } = await supabase.rpc('verify_admin_login', {
+      p_username: username.value.trim(),
+      p_password: password.value,
     });
 
     if (error) {
@@ -231,6 +238,14 @@ import logoImg from '../../assets/ys-logo.png';
       return;
     }
 
+    const admin = Array.isArray(data) ? data[0] : data;
+    if (!admin || !admin.admin_id) {
+      showError('Invalid username or password, or account is inactive.');
+      setLoading(false);
+      return;
+    }
+
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(admin));
     window.location.replace(next);
   });
 </script>

@@ -1,8 +1,16 @@
 ---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import Base from '../../../layouts/Base.astro';
 import Footer from '../../../components/Footer.astro';
-// Unused import removed
 import { supabase, type NewsRow } from '../../../db/supabase';
+import { resolveAssetImage } from '../../../utils/imageHelper';
+
+// Eagerly index news cover images from src/assets/news/
+const localNewsImages = import.meta.glob<{ default: ImageMetadata }>(
+  '../../../assets/news/*.{jpeg,jpg,png,webp,avif}',
+  { eager: true }
+);
 
 // Static paths for all news articles queried strictly from Supabase
 export async function getStaticPaths() {
@@ -33,6 +41,9 @@ const content = article.content_en || article.content_bm;
 const dateStr = article.published_at
   ? new Date(article.published_at).toLocaleDateString('en-MY', { year: 'numeric', month: 'long', day: 'numeric' })
   : '';
+
+// Pre-resolve news cover image
+const coverImg = resolveAssetImage(article.cover_image_url, localNewsImages);
 ---
 
 <Base title={`${title} - Yayasan Sabah Group`} description={article.excerpt_en || title}>
@@ -63,15 +74,25 @@ const dateStr = article.published_at
       )}
 
       {/* Hero Cover Image */}
-      {article.cover_image_url && (
+      {coverImg.metadata ? (
+        <div class="mt-8 overflow-hidden rounded-2xl border border-brand-border bg-white shadow-md">
+          <Image
+            src={coverImg.metadata}
+            alt={title}
+            width={1200}
+            height={675}
+            class="h-auto w-full object-cover"
+          />
+        </div>
+      ) : coverImg.src ? (
         <div class="mt-8 overflow-hidden rounded-2xl border border-brand-border bg-white shadow-md">
           <img
-            src={article.cover_image_url}
+            src={coverImg.src}
             alt={title}
             class="h-auto w-full object-cover"
           />
         </div>
-      )}
+      ) : null}
 
       {/* Article Body */}
       <div class="mt-10 prose prose-lg max-w-none text-slate-800 leading-relaxed">
@@ -79,17 +100,23 @@ const dateStr = article.published_at
           {article.excerpt_en}
         </p>
         <div class="mt-6 space-y-6 text-base leading-7">
-          <p>{content}</p>
+          {content ? (
+            content.split('\n\n').map((paragraph) => (
+              <p>{paragraph}</p>
+            ))
+          ) : (
+            <p>Full article details will be published shortly.</p>
+          )}
         </div>
       </div>
 
-      {/* Back button bottom */}
+      {/* Bottom Back Button */}
       <div class="mt-12 border-t border-brand-border/60 pt-8">
-        <a href="/#news" class="inline-flex items-center gap-2 rounded-xl bg-brand-maroon px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-maroon/90">
-          ← Back to News & Events
+        <a href="/#news" class="inline-flex items-center gap-2 rounded-xl bg-brand-cream/80 px-5 py-2.5 text-sm font-semibold text-brand-maroon hover:bg-brand-gold hover:text-white transition">
+          ← Back to All News
         </a>
       </div>
     </article>
   </main>
-  <Footer locale="en" />
+  <Footer />
 </Base>

@@ -1,5 +1,8 @@
 ---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import type { Locale } from '../../i18n/ui';
+import { resolveAssetImage } from '../../utils/imageHelper';
 
 interface Props {
   locale?: Locale;
@@ -7,7 +10,13 @@ interface Props {
 
 const { locale = 'en' } = Astro.props;
 
-const partners = [
+// Eagerly index partner logos from src/assets/partners/
+const localPartnerLogos = import.meta.glob<{ default: ImageMetadata }>(
+  '../../assets/partners/*.{jpeg,jpg,png,gif,webp,avif}',
+  { eager: true }
+);
+
+const rawPartners = [
   { name: 'Kolej Teknologi Yayasan Sabah (KTYS)', logo: '/images/partners/ktys.png', href: 'https://ktys.edu.my/' },
   { name: 'University College Sabah Foundation (UCSF)', logo: '/images/partners/ucsf.png', href: 'https://www.ucsf.edu.my/' },
   { name: 'Sabah Softwoods Berhad', logo: '/images/partners/softwoods.png', href: 'https://www.yayasansabahgroup.org.my/activities/forestry/' },
@@ -20,6 +29,12 @@ const partners = [
   { name: 'Shangri-La Tanjung Aru Resort', logo: '/images/partners/shangrila-aru.png', href: 'https://www.shangri-la.com/kotakinabalu/tanjungaruresort/' },
   { name: 'Sabah Nature Club', logo: '/images/partners/snc.gif', href: 'https://www.yayasansabahgroup.org.my/activities/conservation-management/' },
 ];
+
+// Pre-resolve all partner logo images in the frontmatter
+const partners = rawPartners.map((p) => ({
+  ...p,
+  image: resolveAssetImage(p.logo, localPartnerLogos),
+}));
 ---
 
 <section id="group-links" class="border-t border-brand-border/40 py-16 sm:py-20">
@@ -62,11 +77,17 @@ const partners = [
         </svg>
       </button>
 
-      {/* Fade edges */}
-      <div class="pointer-events-none absolute inset-y-0 left-0 z-[5] w-14 bg-gradient-to-r from-brand-surface to-transparent" aria-hidden="true"></div>
-      <div class="pointer-events-none absolute inset-y-0 right-0 z-[5] w-14 bg-gradient-to-l from-brand-surface to-transparent" aria-hidden="true"></div>
+      {/* Fade masks */}
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-y-0 left-0 z-5 w-16 bg-linear-to-r from-brand-surface to-transparent"
+      ></div>
+      <div
+        aria-hidden="true"
+        class="pointer-events-none absolute inset-y-0 right-0 z-5 w-16 bg-linear-to-l from-brand-surface to-transparent"
+      ></div>
 
-      {/* Scrollable track */}
+      {/* Continuous scrolling track */}
       <div
         data-marquee-track
         class="mx-12 flex gap-6 overflow-x-auto py-1"
@@ -81,14 +102,25 @@ const partners = [
             title={p.name}
             class="group/card flex-none flex h-24 w-44 items-center justify-center rounded-xl border border-brand-border/60 bg-white px-5 py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-gold hover:shadow-md"
           >
-            <img
-              src={p.logo}
-              alt={p.name}
-              width="160"
-              height="56"
-              loading="lazy"
-              class="max-h-14 max-w-full object-contain opacity-60 grayscale transition-all duration-300 group-hover/card:opacity-100 group-hover/card:grayscale-0"
-            />
+            {p.image.metadata ? (
+              <Image
+                src={p.image.metadata}
+                alt={p.name}
+                width={160}
+                height={56}
+                loading="lazy"
+                class="max-h-14 max-w-full object-contain opacity-60 grayscale transition-all duration-300 group-hover/card:opacity-100 group-hover/card:grayscale-0"
+              />
+            ) : (
+              <img
+                src={p.image.src}
+                alt={p.name}
+                width="160"
+                height="56"
+                loading="lazy"
+                class="max-h-14 max-w-full object-contain opacity-60 grayscale transition-all duration-300 group-hover/card:opacity-100 group-hover/card:grayscale-0"
+              />
+            )}
           </a>
         ))}
         {/* Duplicate set for seamless infinite loop */}
@@ -102,14 +134,25 @@ const partners = [
             tabindex="-1"
             class="group/card flex-none flex h-24 w-44 items-center justify-center rounded-xl border border-brand-border/60 bg-white px-5 py-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-brand-gold hover:shadow-md"
           >
-            <img
-              src={p.logo}
-              alt=""
-              width="160"
-              height="56"
-              loading="lazy"
-              class="max-h-14 max-w-full object-contain opacity-60 grayscale transition-all duration-300 group-hover/card:opacity-100 group-hover/card:grayscale-0"
-            />
+            {p.image.metadata ? (
+              <Image
+                src={p.image.metadata}
+                alt=""
+                width={160}
+                height={56}
+                loading="lazy"
+                class="max-h-14 max-w-full object-contain opacity-60 grayscale transition-all duration-300 group-hover/card:opacity-100 group-hover/card:grayscale-0"
+              />
+            ) : (
+              <img
+                src={p.image.src}
+                alt=""
+                width="160"
+                height="56"
+                loading="lazy"
+                class="max-h-14 max-w-full object-contain opacity-60 grayscale transition-all duration-300 group-hover/card:opacity-100 group-hover/card:grayscale-0"
+              />
+            )}
           </a>
         ))}
       </div>
@@ -132,55 +175,55 @@ const partners = [
     const track = root.querySelector<HTMLElement>('[data-marquee-track]');
     const prevBtn = root.querySelector<HTMLButtonElement>('[data-marquee-prev]');
     const nextBtn = root.querySelector<HTMLButtonElement>('[data-marquee-next]');
+    if (!track) return;
 
-    if (!track || !prevBtn || !nextBtn) return;
+    const SPEED = 0.5; // pixels per animation frame
+    let paused = false;
+    let animId: number | null = null;
 
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const step = 200; // 176px (w-44) + 24px (gap-6)
-    let isPaused = false;
-    let rafId = 0;
-    let accumulator = 0;
-
-    function tick() {
-      if (!isPaused && !prefersReducedMotion && track) {
-        accumulator += 0.6;
-        if (accumulator >= 1) {
-          const move = Math.floor(accumulator);
-          accumulator -= move;
-          track.scrollLeft += move;
-
-          const halfWidth = track.scrollWidth / 2;
-          if (track.scrollLeft >= halfWidth) {
-            track.scrollLeft -= halfWidth;
-          }
-        }
-      }
-      rafId = requestAnimationFrame(tick);
+    function halfWidth(): number {
+      return track!.scrollWidth / 2;
     }
 
-    root.addEventListener('mouseenter', () => { isPaused = true; });
-    root.addEventListener('mouseleave', () => { isPaused = false; });
-    root.addEventListener('focusin', () => { isPaused = true; });
-    root.addEventListener('focusout', () => { isPaused = false; });
-
-    prevBtn.addEventListener('click', () => {
-      const halfWidth = track.scrollWidth / 2;
-      if (track.scrollLeft <= step) {
-        track.scrollLeft += halfWidth;
+    function step() {
+      if (!paused && track) {
+        track.scrollLeft += SPEED;
+        // Loop back to start smoothly when passing half width
+        if (track.scrollLeft >= halfWidth()) {
+          track.scrollLeft = 0;
+        }
       }
-      track.scrollBy({ left: -step, behavior: 'smooth' });
+      animId = requestAnimationFrame(step);
+    }
+
+    animId = requestAnimationFrame(step);
+
+    root.addEventListener('mouseenter', () => { paused = true; });
+    root.addEventListener('mouseleave', () => { paused = false; });
+    root.addEventListener('focusin',    () => { paused = true; });
+    root.addEventListener('focusout',   () => { paused = false; });
+
+    const STEP = 200;
+
+    prevBtn?.addEventListener('click', () => {
+      paused = true;
+      track.scrollBy({ left: -STEP, behavior: 'smooth' });
+      setTimeout(() => { paused = false; }, 1000);
     });
 
-    nextBtn.addEventListener('click', () => {
-      const halfWidth = track.scrollWidth / 2;
-      if (track.scrollLeft >= halfWidth) {
-        track.scrollLeft -= halfWidth;
-      }
-      track.scrollBy({ left: step, behavior: 'smooth' });
+    nextBtn?.addEventListener('click', () => {
+      paused = true;
+      track.scrollBy({ left: STEP, behavior: 'smooth' });
+      setTimeout(() => { paused = false; }, 1000);
     });
 
-    cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(tick);
+    (window as any)._cleanupMarquee = () => {
+      if (animId) cancelAnimationFrame(animId);
+    };
+  }
+
+  if (typeof (window as any)._cleanupMarquee === 'function') {
+    (window as any)._cleanupMarquee();
   }
 
   initMarquee();

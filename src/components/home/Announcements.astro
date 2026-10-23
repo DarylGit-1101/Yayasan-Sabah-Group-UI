@@ -1,6 +1,9 @@
 ---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
 import { useTranslations, type Locale } from '../../i18n/ui';
 import { supabase, type AnnouncementRow } from '../../db/supabase';
+import { resolveAssetImage } from '../../utils/imageHelper';
 
 interface Props {
   locale?: Locale;
@@ -9,8 +12,14 @@ interface Props {
 const { locale = 'en' } = Astro.props;
 const t = useTranslations(locale);
 
+// Eagerly index local announcement images from src/assets/announcements/
+const localAnnouncementImages = import.meta.glob<{ default: ImageMetadata }>(
+  '../../assets/announcements/*.{jpeg,jpg,png,webp,avif}',
+  { eager: true }
+);
+
 // Fetch active announcements from Supabase
-let announcements: AnnouncementRow[] = [];
+let rawAnnouncements: AnnouncementRow[] = [];
 
 try {
   const { data, error } = await supabase
@@ -20,13 +29,30 @@ try {
     .order('published_at', { ascending: false });
 
   if (data && data.length > 0 && !error) {
-    announcements = data as AnnouncementRow[];
+    rawAnnouncements = data as AnnouncementRow[];
   }
 } catch {
   // Offline fallback
 }
 
-const displayItems = announcements;
+// Prepare display items in frontmatter so the HTML template stays clean
+const displayItems = rawAnnouncements.map((item) => {
+  const title = locale === 'bm' ? (item.title_bm || item.title_en) : (item.title_en || item.title_bm);
+  const content = locale === 'bm' ? (item.content_bm || item.content_en) : (item.content_en || item.content_bm);
+  const link = item.attachment_url || item.banner_url || '#';
+  const isExternal = link.startsWith('http://') || link.startsWith('https://');
+  const image = resolveAssetImage(item.banner_url, localAnnouncementImages);
+
+  return {
+    ...item,
+    title,
+    content,
+    link,
+    isExternal,
+    image,
+  };
+});
+
 const showArrows = displayItems.length > 1;
 ---
 
@@ -89,55 +115,57 @@ const showArrows = displayItems.length > 1;
           role="list"
           aria-label={locale === 'bm' ? `${displayItems.length} pengumuman` : `${displayItems.length} announcements`}
         >
-          {displayItems.map((item) => {
-            const title = locale === 'bm' ? (item.title_bm || item.title_en) : (item.title_en || item.title_bm);
-            const content = locale === 'bm' ? (item.content_bm || item.content_en) : (item.content_en || item.content_bm);
-            const link = item.attachment_url || item.banner_url || '#';
-            const isExternal = link.startsWith('http://') || link.startsWith('https://');
-
-            return (
-              <div class="shrink-0 snap-start" role="listitem">
-                <article class="group relative flex h-96 w-88 max-w-[82vw] cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-brand-border bg-white shadow-xs transition-all duration-200 hover:border-brand-gold hover:shadow-lg">
-                  <div class="h-40 shrink-0 bg-linear-to-br from-brand-cream to-brand-sand">
-                    {item.banner_url ? (
-                      <img
-                        src={item.banner_url}
-                        alt={title}
-                        width="352"
-                        height="160"
-                        loading="lazy"
-                        class="block h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div class="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wider text-brand-maroon/50">
-                        Yayasan Sabah Group
-                      </div>
+          {displayItems.map((item) => (
+            <div class="shrink-0 snap-start" role="listitem">
+              <article class="group relative flex h-96 w-88 max-w-[82vw] cursor-pointer flex-col justify-between overflow-hidden rounded-2xl border border-brand-border bg-white shadow-xs transition-all duration-200 hover:border-brand-gold hover:shadow-lg">
+                <div class="h-40 shrink-0 overflow-hidden bg-linear-to-br from-brand-cream to-brand-sand">
+                  {item.image.metadata ? (
+                    <Image
+                      src={item.image.metadata}
+                      alt={item.title}
+                      width={352}
+                      height={160}
+                      loading="lazy"
+                      class="block h-full w-full object-cover"
+                    />
+                  ) : item.image.src ? (
+                    <img
+                      src={item.image.src}
+                      alt={item.title}
+                      width="352"
+                      height="160"
+                      loading="lazy"
+                      class="block h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div class="flex h-full w-full items-center justify-center text-xs font-semibold uppercase tracking-wider text-brand-maroon/50">
+                      Yayasan Sabah Group
+                    </div>
+                  )}
+                </div>
+                <div class="flex flex-1 flex-col justify-between p-5">
+                  <div>
+                    <h3 class="line-clamp-2 text-base font-bold leading-snug text-slate-900 transition-colors duration-200 group-hover:text-brand-maroon">
+                      {item.title}
+                    </h3>
+                    {item.content && (
+                      <p class="mt-2 line-clamp-3 text-[13.5px] leading-relaxed text-slate-500">
+                        {item.content}
+                      </p>
                     )}
                   </div>
-                  <div class="flex flex-1 flex-col justify-between p-5">
-                    <div>
-                      <h3 class="line-clamp-2 text-base font-bold leading-snug text-slate-900 transition-colors duration-200 group-hover:text-brand-maroon">
-                        {title}
-                      </h3>
-                      {content && (
-                        <p class="mt-2 line-clamp-3 text-[13.5px] leading-relaxed text-slate-500">
-                          {content}
-                        </p>
-                      )}
-                    </div>
-                    <a
-                      href={link}
-                      target={isExternal ? '_blank' : undefined}
-                      rel={isExternal ? 'noopener noreferrer' : undefined}
-                      class="mt-4 inline-block self-start rounded-lg bg-brand-maroon px-3.5 py-2 text-[13px] font-semibold text-white no-underline transition-colors duration-200 after:absolute after:inset-0 after:z-[5] hover:bg-brand-gold focus-visible:bg-brand-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
-                    >
-                      {locale === 'bm' ? 'Maklumat lanjut' : 'Find out more'}
-                    </a>
-                  </div>
-                </article>
-              </div>
-            );
-          })}
+                  <a
+                    href={item.link}
+                    target={item.isExternal ? '_blank' : undefined}
+                    rel={item.isExternal ? 'noopener noreferrer' : undefined}
+                    class="mt-4 inline-block self-start rounded-lg bg-brand-maroon px-3.5 py-2 text-[13px] font-semibold text-white no-underline transition-colors duration-200 after:absolute after:inset-0 after:z-[5] hover:bg-brand-gold focus-visible:bg-brand-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
+                  >
+                    {locale === 'bm' ? 'Maklumat lanjut' : 'Find out more'}
+                  </a>
+                </div>
+              </article>
+            </div>
+          ))}
         </div>
 
         {/* Dot indicators */}

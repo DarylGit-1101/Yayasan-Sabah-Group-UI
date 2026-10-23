@@ -3,6 +3,7 @@ import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import type { Locale } from '../../i18n/ui';
 import type { QuickLinkRow } from '../../db/supabase';
+import { resolveAssetImage } from '../../utils/imageHelper';
 
 interface Props {
   item: QuickLinkRow;
@@ -15,32 +16,14 @@ const isClosed   = item.available === false;
 const title = locale === 'bm' ? (item.title_bm || item.title_en) : (item.title_en || item.title_bm);
 const href = locale === 'bm' ? (item.href_bm || item.href_en) : (item.href_en || item.href_bm);
 
-// Eagerly resolve local images once and index by lowercase filename/stem
+// Eagerly index local images from src/assets/quick-links/
 const localImages = import.meta.glob<{ default: ImageMetadata }>(
   '../../assets/quick-links/*.{jpeg,jpg,png,webp,avif}',
   { eager: true }
 );
 
-let localImageMetadata: ImageMetadata | null = null;
-let isRemoteImage = false;
-let remoteImageUrl: string | null = null;
-
-if (item.image_url) {
-  if (item.image_url.startsWith('http://') || item.image_url.startsWith('https://')) {
-    isRemoteImage = true;
-    remoteImageUrl = item.image_url;
-  } else {
-    const rawFilename = (item.image_url.split('/').pop() || '').toLowerCase();
-    const rawStem = rawFilename.replace(/\.[^/.]+$/, '');
-    for (const [path, mod] of Object.entries(localImages)) {
-      const base = (path.split('/').pop() || '').toLowerCase();
-      if (base === rawFilename || base.replace(/\.[^/.]+$/, '') === rawStem) {
-        localImageMetadata = mod.default;
-        break;
-      }
-    }
-  }
-}
+// Resolve Astro ImageMetadata or fallback to remote/direct URL
+const image = resolveAssetImage(item.image_url, localImages);
 ---
 
 <a
@@ -51,29 +34,20 @@ if (item.image_url) {
 >
 
   {/* Card Photo processed via Astro <Image /> */}
-  {(localImageMetadata || isRemoteImage || item.image_url) && (
+  {image.src && (
     <div class="relative aspect-16/10 w-full overflow-hidden bg-white">
-      {localImageMetadata ? (
+      {image.metadata ? (
         <Image
-          src={localImageMetadata}
+          src={image.metadata}
           alt={title}
           width={400}
           height={250}
           class="h-full w-full scale-[1.02] object-cover transition-transform duration-500 ease-out will-change-transform group-hover:scale-110"
           style="backface-visibility: hidden;"
         />
-      ) : isRemoteImage && remoteImageUrl ? (
-        <Image
-          src={remoteImageUrl}
-          alt={title}
-          width={400}
-          height={250}
-          class="h-full w-full scale-[1.02] object-cover transition-transform duration-500 ease-out will-change-transform group-hover:scale-110"
-          style="backface-visibility: hidden;"
-        />
-      ) : item.image_url ? (
+      ) : (
         <img
-          src={item.image_url.startsWith('/') ? item.image_url : `/images/quick-links/${item.image_url}`}
+          src={image.src}
           alt={title}
           width="400"
           height="250"
@@ -81,7 +55,7 @@ if (item.image_url) {
           style="backface-visibility: hidden;"
           loading="lazy"
         />
-      ) : null}
+      )}
       {/* Gradient fade — tall enough to cover the zoom margin */}
       <div
         class="pointer-events-none absolute inset-x-0 -bottom-px h-16 bg-linear-to-t from-white from-10% via-white/90 via-40% to-transparent"

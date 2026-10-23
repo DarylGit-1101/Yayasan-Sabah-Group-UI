@@ -20,7 +20,8 @@ import logoImg from '../../assets/ys-logo.png';
         </a>
 
         <div class="flex items-center gap-3 text-sm">
-          <span id="admin-email" class="hidden text-brand-muted sm:inline"></span>
+          <span id="admin-role" class="hidden rounded-full bg-brand-cream px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-brand-maroon sm:inline"></span>
+          <span id="admin-username" class="hidden font-semibold text-brand-ink sm:inline"></span>
           <button
             id="sign-out"
             type="button"
@@ -42,7 +43,7 @@ import logoImg from '../../assets/ys-logo.png';
       <div class="mt-8 rounded-xl border border-dashed border-brand-border bg-white/60 p-8 text-center">
         <p class="text-sm font-semibold text-brand-ink">No panels yet</p>
         <p class="mx-auto mt-1 max-w-md text-sm text-brand-muted">
-          The feedback inbox, news table and announcements form are the planned
+          The feedback inbox, news table, announcements form, and album slider manager are the planned
           next additions to this area.
         </p>
       </div>
@@ -53,26 +54,50 @@ import logoImg from '../../assets/ys-logo.png';
 <script>
   import { supabase } from '../../db/supabase';
 
+  const STORAGE_KEY = 'ysg_admin_session';
+
   const gate = document.getElementById('admin-gate');
   const content = document.getElementById('admin-content');
-  const email = document.getElementById('admin-email');
+  const usernameEl = document.getElementById('admin-username');
+  const roleEl = document.getElementById('admin-role');
 
-  // Dashboard lives one level below the authority root.
   const root = window.location.pathname.replace(/\/dashboard\/?$/, '');
 
-  async function boot() {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
+  interface AdminSession {
+    admin_id: number;
+    admin_username: string;
+    role: string;
+    admin_status: number;
+    last_login?: string;
+  }
 
-    if (!session) {
+  function getStoredSession(): AdminSession | null {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as AdminSession;
+      if (!parsed || !parsed.admin_id || !parsed.admin_username) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }
+
+  function boot() {
+    const admin = getStoredSession();
+    if (!admin) {
       window.location.replace(`${root}/login/`);
       return;
     }
 
-    if (email) {
-      email.textContent = session.user.email ?? '';
-      email.classList.remove('hidden');
+    if (usernameEl) {
+      usernameEl.textContent = admin.admin_username;
+      usernameEl.classList.remove('hidden');
+    }
+
+    if (roleEl && admin.role) {
+      roleEl.textContent = admin.role;
+      roleEl.classList.remove('hidden');
     }
 
     gate?.remove();
@@ -80,11 +105,17 @@ import logoImg from '../../assets/ys-logo.png';
   }
 
   document.getElementById('sign-out')?.addEventListener('click', async () => {
-    await supabase.auth.signOut();
+    const admin = getStoredSession();
+    sessionStorage.removeItem(STORAGE_KEY);
+    if (admin?.admin_id) {
+      try {
+        await supabase.rpc('record_admin_logout', { p_admin_id: admin.admin_id });
+      } catch {
+        // Ignore network errors on sign-out
+      }
+    }
     window.location.replace(`${root}/login/`);
   });
 
-  boot().catch(() => {
-    window.location.replace(`${root}/login/`);
-  });
+  boot();
 </script>

@@ -1,7 +1,9 @@
 ---
+import type { ImageMetadata } from 'astro';
 import { Image } from 'astro:assets';
 import { useTranslations, type Locale } from '../../i18n/ui';
 import { supabase, type AlbumRow } from '../../db/supabase';
+import { resolveAssetImage } from '../../utils/imageHelper';
 import logoWhiteImg from '../../assets/ys-logo-white.png';
 
 interface Props {
@@ -10,6 +12,12 @@ interface Props {
 
 const { locale = 'en' } = Astro.props;
 const t = useTranslations(locale);
+
+// Eagerly resolve all local album images from src/assets/albums/
+const localAlbumImages = import.meta.glob<{ default: ImageMetadata }>(
+  '../../assets/albums/**/*.{jpeg,jpg,png,webp,avif}',
+  { eager: true }
+);
 
 let albums: AlbumRow[] = [];
 
@@ -55,10 +63,14 @@ const slidesPayload = albums.map((album) => {
     ? (album.cta_label_bm || album.cta_label_en || (album.cta_url ? 'Maklumat Lanjut' : ''))
     : (album.cta_label_en || album.cta_label_bm || (album.cta_url ? 'More Info' : ''));
   const dateLabel = formatDateRange(album.event_date, album.event_end_date);
-  const photos = (album.album_photos || []).map((p) => ({
-    url: p.image_url,
-    caption: locale === 'bm' ? (p.caption_bm || p.caption_en || '') : (p.caption_en || p.caption_bm || ''),
-  }));
+  const photos = (album.album_photos || []).map((p) => {
+    const resolved = resolveAssetImage(p.image_url, localAlbumImages);
+    return {
+      url: resolved.src,
+      metadata: resolved.metadata,
+      caption: locale === 'bm' ? (p.caption_bm || p.caption_en || '') : (p.caption_en || p.caption_bm || ''),
+    };
+  });
 
   return {
     id: album.album_id,
@@ -73,6 +85,12 @@ const slidesPayload = albums.map((album) => {
   };
 });
 
+// For client dataset: strip non-serializable metadata, keep optimized WebP URLs
+const clientSlides = slidesPayload.map((s) => ({
+  ...s,
+  photos: s.photos.map((p) => ({ url: p.url, caption: p.caption })),
+}));
+
 const firstSlide = slidesPayload[0];
 const firstPhoto = firstSlide?.photos[0];
 ---
@@ -81,7 +99,7 @@ const firstPhoto = firstSlide?.photos[0];
   {slidesPayload.length > 0 && firstSlide ? (
     <div
       data-home-slider
-      data-slides={JSON.stringify(slidesPayload)}
+      data-slides={JSON.stringify(clientSlides)}
       data-locale={locale}
       class="relative w-full overflow-hidden bg-neutral-800"
     >
@@ -219,14 +237,26 @@ const firstPhoto = firstSlide?.photos[0];
 
           {/* Standardized <Image /> Filling the Whole Right Side */}
           {firstPhoto ? (
-            <Image
-              data-stage-image
-              src={firstPhoto.url}
-              alt={firstSlide.title}
-              width={1280}
-              height={720}
-              class="absolute inset-0 z-10 h-full w-full object-cover object-center"
-            />
+            firstPhoto.metadata ? (
+              <Image
+                data-stage-image
+                src={firstPhoto.metadata}
+                alt={firstSlide.title}
+                width={1280}
+                height={720}
+                loading="eager"
+                class="absolute inset-0 z-10 h-full w-full object-cover object-center"
+              />
+            ) : (
+              <img
+                data-stage-image
+                src={firstPhoto.url}
+                alt={firstSlide.title}
+                width="1280"
+                height="720"
+                class="absolute inset-0 z-10 h-full w-full object-cover object-center"
+              />
+            )
           ) : (
             <div class="relative z-10 text-sm text-white/60">
               {locale === 'bm' ? 'Tiada imej tersedia' : 'No image available'}
