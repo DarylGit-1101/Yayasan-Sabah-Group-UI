@@ -30,12 +30,14 @@ try {
     .order('event_date', { ascending: false });
 
   if (data && !error) {
-    albums = (data as AlbumRow[]).map((album) => ({
-      ...album,
-      album_photos: (album.album_photos || []).sort(
-        (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.photo_id - b.photo_id
-      ),
-    }));
+    albums = (data as AlbumRow[])
+      .filter((album) => album.album_photos && album.album_photos.length > 0)
+      .map((album) => ({
+        ...album,
+        album_photos: (album.album_photos || []).sort(
+          (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.photo_id - b.photo_id
+        ),
+      }));
   }
 } catch {
   // Offline fallback
@@ -101,7 +103,7 @@ const firstPhoto = firstSlide?.photos[0];
       data-home-slider
       data-slides={JSON.stringify(clientSlides)}
       data-locale={locale}
-      class="relative w-full overflow-hidden bg-neutral-800"
+      class="relative mx-auto max-w-7xl overflow-hidden bg-neutral-800"
     >
       {/* Top Story-Style Status Indicator Bar — Thinner (2px -> 6px on hover), white fill, blended fade background */}
       <div
@@ -338,6 +340,8 @@ const firstPhoto = firstSlide?.photos[0];
 </section>
 
 <script>
+  import { supabase } from '../../db/supabase';
+
   interface SlidePhoto {
     url: string;
     caption: string;
@@ -353,6 +357,23 @@ const firstPhoto = firstSlide?.photos[0];
     ctaLabel: string;
     ctaUrl: string;
     photos: SlidePhoto[];
+  }
+
+  function formatDateLabel(start?: string, end?: string, loc: string = 'en'): string {
+    if (!start) return '';
+    try {
+      const fmt = new Intl.DateTimeFormat(loc === 'bm' ? 'ms-MY' : 'en-MY', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+      const startDate = new Date(start);
+      if (!end || end === start) return fmt.format(startDate);
+      const endDate = new Date(end);
+      return `${fmt.format(startDate)} – ${fmt.format(endDate)}`;
+    } catch {
+      return start;
+    }
   }
 
   function initHomeSlider() {
@@ -391,8 +412,108 @@ const firstPhoto = firstSlide?.photos[0];
       const captionWrap = root.querySelector<HTMLElement>('[data-photo-caption-wrap]');
       const captionEl = root.querySelector<HTMLElement>('[data-photo-caption]');
 
-      const storyBtns = root.querySelectorAll<HTMLButtonElement>('[data-story-btn]');
-      const storyFills = root.querySelectorAll<HTMLElement>('[data-story-fill]');
+      const storyBar = root.querySelector<HTMLElement>('[data-story-bar]');
+      let storyBtns = root.querySelectorAll<HTMLButtonElement>('[data-story-btn]');
+      let storyFills = root.querySelectorAll<HTMLElement>('[data-story-fill]');
+
+      function attachStoryBtnListeners() {
+        storyBtns.forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const nextIdx = Number(btn.dataset.storyBtn || 0);
+            const dir = nextIdx >= activeSlideIdx ? 1 : -1;
+            activeSlideIdx = nextIdx;
+            activePhotoIdx = 0;
+            renderSlide(dir);
+            resetTimer();
+          });
+        });
+      }
+
+      function rebuildStoryBars() {
+        if (!storyBar) return;
+        storyBar.innerHTML = slides.map((_, idx) => `
+          <button
+            type="button"
+            data-story-btn="${idx}"
+            aria-label="Highlight ${idx + 1}"
+            class="group/bar relative flex h-4 flex-1 cursor-pointer items-center focus-visible:outline-none"
+          >
+            <span class="relative h-0.5 w-full overflow-hidden rounded-full bg-white/25 transition-all duration-200 group-hover/bar:h-1.5 group-hover/bar:bg-white/35">
+              <span
+                data-story-fill="${idx}"
+                style="width: ${idx < activeSlideIdx ? '100%' : '0%'};"
+                class="absolute inset-y-0 left-0 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]"
+              />
+            </span>
+          </button>
+        `).join('');
+
+        storyBtns = root.querySelectorAll<HTMLButtonElement>('[data-story-btn]');
+        storyFills = root.querySelectorAll<HTMLElement>('[data-story-fill]');
+        attachStoryBtnListeners();
+      }
+
+      async function fetchLiveSlides() {
+        try {
+          const { data, error } = await supabase
+            .from('albums')
+            .select('*, album_photos(*)')
+            .eq('is_featured', true)
+            .order('sort_order', { ascending: true })
+            .order('event_date', { ascending: false });
+
+          if (error || !data || data.length === 0) return;
+
+          const mappedSlides: SlideItem[] = data
+            .filter((album: any) => album.album_photos && album.album_photos.length > 0)
+            .map((album: any) => {
+              const title = locale === 'bm' ? (album.title_bm || album.title_en) : (album.title_en || album.title_bm);
+              const description = locale === 'bm'
+                ? (album.description_bm || album.description_en || '')
+                : (album.description_en || album.description_bm || '');
+              const ctaLabel = locale === 'bm'
+                ? (album.cta_label_bm || album.cta_label_en || (album.cta_url ? 'Maklumat Lanjut' : ''))
+                : (album.cta_label_en || album.cta_label_bm || (album.cta_url ? 'More Info' : ''));
+
+              const sortedPhotos = (album.album_photos || []).sort(
+                (p1: any, p2: any) => (p1.sort_order ?? 0) - (p2.sort_order ?? 0) || p1.photo_id - p2.photo_id
+              );
+
+              return {
+                id: album.album_id,
+                type: album.type || 'event',
+                title,
+                description,
+                dateLabel: formatDateLabel(album.event_date, album.event_end_date, locale),
+                venue: album.venue || '',
+                ctaLabel,
+                ctaUrl: album.cta_url || '',
+                photos: sortedPhotos.map((p: any) => ({
+                  url: p.image_url,
+                  caption: locale === 'bm' ? (p.caption_bm || p.caption_en || '') : (p.caption_en || p.caption_bm || ''),
+                })),
+              };
+            });
+
+          if (mappedSlides.length === 0) return;
+
+          const isDifferent = JSON.stringify(mappedSlides) !== JSON.stringify(slides);
+          if (!isDifferent) return;
+
+          const oldLength = slides.length;
+          slides = mappedSlides;
+          if (activeSlideIdx >= slides.length) activeSlideIdx = 0;
+          if (activePhotoIdx >= (slides[activeSlideIdx]?.photos.length || 0)) activePhotoIdx = 0;
+
+          if (oldLength !== slides.length) {
+            rebuildStoryBars();
+          }
+          renderSlide(0);
+          resetTimer();
+        } catch {
+          // Graceful fallback to static slides
+        }
+      }
 
       const PHOTO_DURATION = 4500; // 4.5 seconds per photo
       let photoStartTime = performance.now();
@@ -595,23 +716,21 @@ const firstPhoto = firstSlide?.photos[0];
         nextStep();
       });
 
-      storyBtns.forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const nextIdx = Number(btn.dataset.storyBtn || 0);
-          const dir = nextIdx >= activeSlideIdx ? 1 : -1;
-          activeSlideIdx = nextIdx;
-          activePhotoIdx = 0;
-          renderSlide(dir);
-          resetTimer();
-        });
-      });
-
+      attachStoryBtnListeners();
       renderSlide(0);
       resetTimer();
       rafId = requestAnimationFrame(tick);
 
+      // Live SWR Hydration: Quietly pull fresh slides from Supabase in the background
+      fetchLiveSlides();
+      const onVisibility = () => {
+        if (document.visibilityState === 'visible') fetchLiveSlides();
+      };
+      document.addEventListener('visibilitychange', onVisibility);
+
       document.addEventListener('astro:before-swap', () => {
         if (rafId) cancelAnimationFrame(rafId);
+        document.removeEventListener('visibilitychange', onVisibility);
       }, { once: true });
     });
   }

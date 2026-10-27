@@ -161,6 +161,44 @@ CREATE POLICY "Public read album photos"
   ON public.album_photos FOR SELECT TO public
   USING (true);
 
+-- Allow portal management of albums & photos
+DROP POLICY IF EXISTS "Allow manage albums" ON public.albums;
+CREATE POLICY "Allow manage albums"
+  ON public.albums FOR ALL TO public
+  USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow manage album photos" ON public.album_photos;
+CREATE POLICY "Allow manage album photos"
+  ON public.album_photos FOR ALL TO public
+  USING (true) WITH CHECK (true);
+
+-- Storage bucket configuration for album uploads
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('albums', 'albums', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Public Access Albums" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Upload to Albums" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Update to Albums" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Delete from Albums" ON storage.objects;
+
+CREATE POLICY "Public Access Albums" 
+ON storage.objects FOR SELECT TO public 
+USING (bucket_id = 'albums');
+
+CREATE POLICY "Allow Upload to Albums" 
+ON storage.objects FOR INSERT TO public 
+WITH CHECK (bucket_id = 'albums');
+
+CREATE POLICY "Allow Update to Albums" 
+ON storage.objects FOR UPDATE TO public 
+USING (bucket_id = 'albums') 
+WITH CHECK (bucket_id = 'albums');
+
+CREATE POLICY "Allow Delete from Albums" 
+ON storage.objects FOR DELETE TO public 
+USING (bucket_id = 'albums');
+
 -- ==============================================================================
 -- 4. ANNOUNCEMENTS
 -- ==============================================================================
@@ -189,6 +227,39 @@ ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public read published announcements"
   ON public.announcements FOR SELECT TO public
   USING (status = 2);
+
+-- Allow portal management of announcements
+DROP POLICY IF EXISTS "Allow manage announcements" ON public.announcements;
+CREATE POLICY "Allow manage announcements"
+  ON public.announcements FOR ALL TO public
+  USING (true) WITH CHECK (true);
+
+-- Storage bucket configuration for announcement media & PDF attachments
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('announcements', 'announcements', true)
+ON CONFLICT (id) DO NOTHING;
+
+DROP POLICY IF EXISTS "Public Access Announcements" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Upload to Announcements" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Update to Announcements" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Delete from Announcements" ON storage.objects;
+
+CREATE POLICY "Public Access Announcements" 
+ON storage.objects FOR SELECT TO public 
+USING (bucket_id = 'announcements');
+
+CREATE POLICY "Allow Upload to Announcements" 
+ON storage.objects FOR INSERT TO public 
+WITH CHECK (bucket_id = 'announcements');
+
+CREATE POLICY "Allow Update to Announcements" 
+ON storage.objects FOR UPDATE TO public 
+USING (bucket_id = 'announcements') 
+WITH CHECK (bucket_id = 'announcements');
+
+CREATE POLICY "Allow Delete from Announcements" 
+ON storage.objects FOR DELETE TO public 
+USING (bucket_id = 'announcements');
 
 -- ==============================================================================
 -- 5. NEWS

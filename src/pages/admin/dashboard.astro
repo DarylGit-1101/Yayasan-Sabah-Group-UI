@@ -1,121 +1,106 @@
 ---
-import { Image } from 'astro:assets';
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import logoImg from '../../assets/ys-logo.png';
+import AdminSidebar from '../../components/admin/AdminSidebar.astro';
+import AdminTopbar from '../../components/admin/AdminTopbar.astro';
+import OverviewPanel from '../../components/admin/OverviewPanel.astro';
+import HighlightsPanel from '../../components/admin/HighlightsPanel.astro';
+import AnnouncementsPanel from '../../components/admin/AnnouncementsPanel.astro';
+import StandbyPanels from '../../components/admin/StandbyPanels.astro';
+import CommandPaletteModal from '../../components/admin/CommandPaletteModal.astro';
+import 'filepond/dist/filepond.min.css';
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css';
 ---
 
-<AdminLayout title="Dashboard">
-  <!-- Shown until the session check resolves -->
-  <div id="admin-gate" class="grid min-h-screen place-items-center px-6 text-sm text-brand-muted">
-    Checking your session…
+<AdminLayout title="YSG Studio">
+  <!-- Loading Gate: Displayed until client-side session is verified -->
+  <div id="admin-gate" class="grid min-h-screen place-items-center bg-brand-maroon-dark px-6 font-mono text-xs text-brand-cream/80">
+    <div class="flex items-center gap-3 rounded-xl border border-white/15 bg-brand-maroon px-5 py-3.5 shadow-2xl">
+      <div class="size-3.5 animate-spin rounded-full border-2 border-brand-gold border-t-transparent"></div>
+      <span class="tracking-wider uppercase">Initializing studio session…</span>
+    </div>
   </div>
 
-  <!-- Hidden until a valid session is confirmed -->
-  <div id="admin-content" class="hidden min-h-screen">
-    <header class="border-b border-brand-border bg-white">
-      <div class="flex w-full items-center justify-between gap-4 px-6 py-4 lg:px-8">
-        <a href="/" class="flex items-center gap-3">
-          <Image src={logoImg} alt="Yayasan Sabah Group" class="h-9 w-auto" loading="eager" />
-          <span class="hidden text-sm font-bold tracking-wide text-brand-maroon sm:inline">Authority</span>
-        </a>
+  <!-- Authenticated Studio Shell (YSG Deep Maroon Frame + Inset Warm Surface) -->
+  <div id="admin-content" class="hidden min-h-screen bg-brand-maroon-dark text-brand-ink lg:grid lg:grid-cols-[15.5rem_minmax(0,1fr)] lg:p-2.5 lg:gap-2.5">
+    <AdminSidebar />
 
-        <div class="flex items-center gap-3 text-sm">
-          <span id="admin-role" class="hidden rounded-full bg-brand-cream px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-brand-maroon sm:inline"></span>
-          <span id="admin-username" class="hidden font-semibold text-brand-ink sm:inline"></span>
-          <button
-            id="sign-out"
-            type="button"
-            class="rounded-lg border border-brand-border px-3 py-1.5 font-semibold text-brand-maroon transition-colors hover:border-brand-gold hover:text-brand-gold-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-maroon"
-          >
-            Sign out
-          </button>
-        </div>
-      </div>
-    </header>
+    <!-- INSET STUDIO VIEWPORT -->
+    <div class="flex min-w-0 flex-1 flex-col bg-brand-surface lg:rounded-xl lg:border lg:border-white/15 lg:shadow-2xl overflow-hidden">
+      <AdminTopbar />
 
-    <main class="w-full px-6 py-10 lg:px-8">
-      <p class="text-xs font-bold uppercase tracking-[0.18em] text-brand-gold">Authority</p>
-      <h1 class="mt-1.5 text-2xl font-bold tracking-tight text-brand-maroon sm:text-3xl">Dashboard</h1>
-      <p class="mt-2 max-w-2xl text-sm leading-6 text-brand-muted">
-        You are signed in. Content panels will be added here next.
-      </p>
-
-      <div class="mt-8 rounded-xl border border-dashed border-brand-border bg-white/60 p-8 text-center">
-        <p class="text-sm font-semibold text-brand-ink">No panels yet</p>
-        <p class="mx-auto mt-1 max-w-md text-sm text-brand-muted">
-          The feedback inbox, news table, announcements form, and album slider manager are the planned
-          next additions to this area.
-        </p>
-      </div>
-    </main>
+      <!-- Main Workspace Canvas -->
+      <main class="flex-1 p-5 lg:p-7 max-w-[1440px] w-full mx-auto">
+        <OverviewPanel />
+        <HighlightsPanel />
+        <AnnouncementsPanel />
+        <StandbyPanels />
+      </main>
+    </div>
   </div>
+
+  <CommandPaletteModal />
 </AdminLayout>
 
 <script>
   import { supabase } from '../../db/supabase';
-
-  const STORAGE_KEY = 'ysg_admin_session';
-
-  const gate = document.getElementById('admin-gate');
-  const content = document.getElementById('admin-content');
-  const usernameEl = document.getElementById('admin-username');
-  const roleEl = document.getElementById('admin-role');
-
-  const root = window.location.pathname.replace(/\/dashboard\/?$/, '');
-
-  interface AdminSession {
-    admin_id: number;
-    admin_username: string;
-    role: string;
-    admin_status: number;
-    last_login?: string;
-  }
-
-  function getStoredSession(): AdminSession | null {
-    try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as AdminSession;
-      if (!parsed || !parsed.admin_id || !parsed.admin_username) return null;
-      return parsed;
-    } catch {
-      return null;
-    }
-  }
+  import { adminState, fetchStats, getStoredSession, STORAGE_KEY } from '../../scripts/admin/store';
+  import { initNavigation } from '../../scripts/admin/navigation';
+  import { initOverviewListeners } from '../../scripts/admin/overview';
+  import { fetchAlbums, initAlbumsListeners } from '../../scripts/admin/albums';
+  import { initPhotosDrawerListeners } from '../../scripts/admin/photosDrawer';
+  import { fetchAnnouncements, initAnnouncementsListeners } from '../../scripts/admin/announcements';
+  import { initCommandPaletteAndShortcuts } from '../../scripts/admin/commandPalette';
 
   function boot() {
+    const rootPath = window.location.pathname.replace(/\/dashboard\/?$/, '');
     const admin = getStoredSession();
     if (!admin) {
-      window.location.replace(`${root}/login/`);
+      window.location.replace(`${rootPath}/login/`);
       return;
     }
 
-    if (usernameEl) {
-      usernameEl.textContent = admin.admin_username;
-      usernameEl.classList.remove('hidden');
-    }
+    const usernameEl = document.getElementById('admin-username');
+    const roleEl = document.getElementById('admin-role');
+    const avatarEl = document.getElementById('admin-avatar');
 
-    if (roleEl && admin.role) {
-      roleEl.textContent = admin.role;
-      roleEl.classList.remove('hidden');
-    }
+    if (usernameEl) usernameEl.textContent = admin.admin_username;
+    if (roleEl) roleEl.textContent = admin.role;
+    if (avatarEl) avatarEl.textContent = admin.admin_username.charAt(0).toUpperCase();
 
-    gate?.remove();
-    content?.classList.remove('hidden');
-  }
+    document.getElementById('admin-gate')?.remove();
+    document.getElementById('admin-content')?.classList.remove('hidden');
 
-  document.getElementById('sign-out')?.addEventListener('click', async () => {
-    const admin = getStoredSession();
-    sessionStorage.removeItem(STORAGE_KEY);
-    if (admin?.admin_id) {
-      try {
-        await supabase.rpc('record_admin_logout', { p_admin_id: admin.admin_id });
-      } catch {
-        // Ignore network errors on sign-out
+    adminState.onTabChange = (targetName) => {
+      if (targetName === 'highlights') {
+        fetchAlbums();
+      } else if (targetName === 'announcements') {
+        fetchAnnouncements();
       }
-    }
-    window.location.replace(`${root}/login/`);
-  });
+    };
+
+    initNavigation();
+    initOverviewListeners();
+    initAlbumsListeners();
+    initPhotosDrawerListeners();
+    initAnnouncementsListeners();
+    initCommandPaletteAndShortcuts();
+
+    document.getElementById('sign-out')?.addEventListener('click', async () => {
+      sessionStorage.removeItem(STORAGE_KEY);
+      if (admin?.admin_id) {
+        try {
+          await supabase.rpc('record_admin_logout', { p_admin_id: admin.admin_id });
+        } catch {
+          // Ignore
+        }
+      }
+      window.location.replace(`${rootPath}/login/`);
+    });
+
+    fetchStats();
+    fetchAlbums(true);
+    fetchAnnouncements(true);
+  }
 
   boot();
 </script>

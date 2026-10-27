@@ -1,0 +1,208 @@
+---
+---
+
+<!-- PANEL 2: HIGHLIGHTS & SLIDER SEQUENCER -->
+<section id="panel-highlights" class="panel-view hidden space-y-5">
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-brand-border pb-4">
+    <div>
+      <h2 class="text-lg font-bold tracking-tight text-brand-maroon">Homepage Slider Sequence</h2>
+      <p class="text-xs text-brand-muted">
+        Click any album cover to reorder its slide filmstrip or upload new frames.
+      </p>
+    </div>
+    <button
+      id="btn-new-album"
+      type="button"
+      class="inline-flex items-center gap-2 rounded-lg bg-brand-maroon px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-brand-maroon-dark cursor-pointer"
+    >
+      <span>+ New Album</span>
+    </button>
+  </div>
+
+  <div id="albums-loading" class="py-12 text-center font-mono text-xs text-brand-muted">
+    Loading sequence…
+  </div>
+
+  <div id="albums-empty" class="hidden rounded-xl border border-dashed border-brand-border bg-white p-12 text-center">
+    <p class="text-sm font-semibold text-brand-maroon">No albums in sequence</p>
+    <p class="mt-1 text-xs text-brand-muted">Create an album to populate the homepage highlight bar.</p>
+  </div>
+
+  <div id="albums-grid" class="hidden grid gap-5 md:grid-cols-2">
+    <!-- Dynamically populated by renderAlbums() -->
+  </div>
+</section>
+
+<!-- MODAL: ALBUM CREATE / EDIT FORM -->
+<div id="modal-album" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+  <div class="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl border border-brand-border bg-white p-6 shadow-2xl sm:p-7">
+    <div class="flex items-center justify-between border-b border-brand-border pb-4">
+      <div>
+        <p class="font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-gold">SLIDER SEQUENCE</p>
+        <h3 id="modal-album-title" class="text-base font-bold text-brand-maroon">Create New Album</h3>
+      </div>
+      <button id="modal-album-close" type="button" class="text-brand-muted hover:text-brand-maroon text-xl leading-none cursor-pointer">&times;</button>
+    </div>
+
+    <form id="form-album" class="mt-5 space-y-4">
+      <input type="hidden" id="album-id" name="album_id" />
+
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div>
+          <label for="album-type" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Format</label>
+          <select id="album-type" name="type" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none">
+            <option value="event">Event Album (Multi-photo)</option>
+            <option value="poster">Official Notice (Single)</option>
+          </select>
+        </div>
+        <div>
+          <label for="album-status" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">State</label>
+          <select id="album-status" name="status" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none">
+            <option value="2">Published (Live)</option>
+            <option value="1">Draft</option>
+            <option value="3">Archived</option>
+          </select>
+        </div>
+        <div>
+          <label for="album-sort" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Sequence #</label>
+          <input type="number" id="album-sort" name="sort_order" value="0" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="album-title-en" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Title (EN) *</label>
+          <input type="text" id="album-title-en" name="title_en" required placeholder="e.g. 13th PESAWI Carnival" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+        </div>
+        <div>
+          <label for="album-title-bm" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Tajuk (BM) *</label>
+          <input type="text" id="album-title-bm" name="title_bm" required placeholder="cth. Sukan PESAWI Ke-13" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label for="album-desc-en" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Summary (EN)</label>
+          <textarea id="album-desc-en" name="description_en" rows="3" placeholder="Brief summary..." class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none"></textarea>
+        </div>
+        <div>
+          <label for="album-desc-bm" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Ringkasan (BM)</label>
+          <textarea id="album-desc-bm" name="description_bm" rows="3" placeholder="Ringkasan sorotan..." class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none"></textarea>
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div>
+          <label for="album-date" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Start Date</label>
+          <input type="date" id="album-date" name="event_date" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+        </div>
+        <div>
+          <label for="album-end-date" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">End Date</label>
+          <input type="date" id="album-end-date" name="event_end_date" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+        </div>
+        <div>
+          <label for="album-venue" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Venue</label>
+          <input type="text" id="album-venue" name="venue" placeholder="Likas Sports Complex" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+        </div>
+      </div>
+
+      <div class="grid gap-4 sm:grid-cols-3">
+        <div>
+          <label for="album-cta-en" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">CTA Label (EN)</label>
+          <input type="text" id="album-cta-en" name="cta_label_en" placeholder="More Info" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+        </div>
+        <div>
+          <label for="album-cta-bm" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">CTA Label (BM)</label>
+          <input type="text" id="album-cta-bm" name="cta_label_bm" placeholder="Maklumat Lanjut" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+        </div>
+        <div>
+          <label for="album-cta-url" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">CTA Target URL</label>
+          <input type="text" id="album-cta-url" name="cta_url" placeholder="/media/news/... or https://" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+        </div>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between">
+          <label class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Upload Photos (Optional)</label>
+          <span class="font-mono text-[10px] text-brand-muted">PNG · JPG · WEBP (Auto-optimized)</span>
+        </div>
+        <input type="file" id="album-modal-files" multiple accept="image/png,image/jpeg,image/webp" class="hidden" />
+        <label
+          id="album-modal-dropzone"
+          for="album-modal-files"
+          class="mt-1.5 flex flex-col items-center justify-center rounded-lg border border-dashed border-brand-border bg-brand-surface p-4 text-center transition hover:border-brand-gold hover:bg-white cursor-pointer"
+        >
+          <p class="text-xs font-semibold text-brand-maroon">Click to browse or drag & drop album photos here</p>
+          <p class="mt-0.5 font-mono text-[10px] text-brand-muted">Selected frames will be uploaded & attached when you click Save Album</p>
+        </label>
+        <div id="album-modal-staged-list" class="mt-2.5 hidden grid-cols-3 gap-2.5 sm:grid-cols-5"></div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-1">
+        <input type="checkbox" id="album-featured" name="is_featured" checked class="size-4 rounded border-brand-border text-brand-maroon focus:ring-brand-gold" />
+        <label for="album-featured" class="text-xs font-semibold text-brand-ink">Place album On-Air in the Homepage Slider</label>
+      </div>
+
+      <div class="flex items-center justify-end gap-2.5 border-t border-brand-border pt-4">
+        <button id="modal-album-cancel" type="button" class="rounded-lg border border-brand-border px-4 py-2 text-xs font-semibold text-brand-ink transition hover:bg-brand-surface cursor-pointer">Cancel</button>
+        <button id="modal-album-submit" type="submit" class="inline-flex items-center gap-2 rounded-lg bg-brand-maroon px-5 py-2 text-xs font-semibold text-white transition hover:bg-brand-maroon-dark cursor-pointer">
+          <span id="modal-album-label">Save Album</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- DRAWER: PHOTO SEQUENCER -->
+<div id="drawer-backdrop" class="fixed inset-0 z-40 hidden bg-black/60 backdrop-blur-xs"></div>
+<aside id="drawer-photos" class="fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl translate-x-full flex-col justify-between bg-white shadow-2xl transition-transform duration-200 ease-out">
+  
+  <div class="flex items-center justify-between border-b border-brand-border bg-brand-cream/20 px-6 py-4">
+    <div>
+      <p class="font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-gold">FILMSTRIP SEQUENCER</p>
+      <h3 id="drawer-album-title" class="text-base font-bold text-brand-maroon truncate max-w-md">Album Photos</h3>
+    </div>
+    <button id="drawer-photos-close" type="button" class="text-brand-muted hover:text-brand-maroon text-xl leading-none cursor-pointer">&times;</button>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-6 space-y-6">
+    <div class="space-y-2.5">
+      <div class="flex items-center justify-between">
+        <label class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Drop Frames</label>
+        <span class="font-mono text-[10px] text-brand-muted">PNG · JPG · WEBP</span>
+      </div>
+      <div class="rounded-xl border border-brand-border bg-brand-surface p-3">
+        <input type="file" id="filepond-input" name="filepond" multiple accept="image/png,image/jpeg,image/webp" />
+      </div>
+
+      <details class="group rounded-lg border border-brand-border bg-white p-2.5 text-xs">
+        <summary class="cursor-pointer font-medium text-brand-muted hover:text-brand-maroon">
+          Link static asset path manually
+        </summary>
+        <form id="form-manual-photo" class="mt-2.5 flex gap-2">
+          <input type="text" id="manual-photo-url" placeholder="/images/albums/3/1.jpg" class="flex-1 rounded-md border border-brand-border px-3 py-1.5 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+          <button type="submit" class="rounded-md bg-brand-maroon px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-maroon-dark cursor-pointer">Add</button>
+        </form>
+      </details>
+    </div>
+
+    <div class="space-y-3 border-t border-brand-border pt-5">
+      <div class="flex items-center justify-between">
+        <p class="font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">
+          Sequence Order (<span id="drawer-photo-count">0</span>)
+        </p>
+        <span class="font-mono text-[10px] text-brand-muted">DRAG HANDLE OR USE ARROWS</span>
+      </div>
+
+      <div id="drawer-photos-grid" class="grid gap-3 sm:grid-cols-2">
+        <!-- Populated dynamically by renderDrawerPhotos() -->
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-brand-border bg-brand-surface px-6 py-3.5">
+    <button id="drawer-photos-done" type="button" class="w-full rounded-lg bg-brand-maroon py-2 text-xs font-semibold text-white transition hover:bg-brand-maroon-dark cursor-pointer">
+      Done
+    </button>
+  </div>
+</aside>

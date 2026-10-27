@@ -1,0 +1,175 @@
+---
+import { Image } from 'astro:assets';
+import logoWhiteImg from '../../assets/ys-logo-white.png';
+---
+
+<!-- Mobile Sidebar Backdrop -->
+<div id="sidebar-backdrop" class="fixed inset-0 z-40 hidden bg-black/60 backdrop-blur-xs lg:hidden" aria-hidden="true"></div>
+
+<!-- LEFT COMMAND RAIL -->
+<aside
+  id="admin-sidebar"
+  class="fixed inset-y-0 left-0 z-50 flex w-64 -translate-x-full flex-col justify-between bg-brand-maroon-dark px-2.5 py-3 text-brand-cream/85 transition-transform duration-200 ease-out lg:static lg:w-auto lg:translate-x-0 lg:px-1.5 lg:py-2"
+>
+  <div class="space-y-5">
+    <!-- Brand Header -->
+    <div class="flex items-center justify-between px-2.5 py-1.5">
+      <div class="flex items-center gap-2.5">
+        <Image src={logoWhiteImg} alt="YSG" class="h-7 w-auto" loading="eager" />
+        <div class="flex items-center gap-1.5 border-l border-white/20 pl-2.5">
+          <span class="font-mono text-xs font-bold tracking-wider text-white">YSG</span>
+          <span class="rounded bg-brand-gold/25 border border-brand-gold/40 px-1.5 py-0.5 font-mono text-[9px] font-bold tracking-widest text-brand-gold">STUDIO</span>
+        </div>
+      </div>
+      <button id="close-sidebar-btn" type="button" class="text-brand-cream/60 hover:text-white lg:hidden" aria-label="Close menu">
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Quick Command Trigger (Cmd+K) -->
+    <div class="px-1">
+      <button
+        type="button"
+        id="btn-open-cmd"
+        class="group flex w-full items-center justify-between rounded-lg border border-white/15 bg-brand-maroon/90 px-3 py-2 text-xs text-brand-cream/75 transition hover:border-brand-gold/50 hover:bg-brand-maroon hover:text-white cursor-pointer"
+      >
+        <span class="flex items-center gap-2">
+          <svg class="size-3.5 text-brand-gold transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <span>Jump or run…</span>
+        </span>
+        <kbd class="rounded border border-white/15 bg-brand-maroon-dark/80 px-1.5 py-0.5 font-mono text-[10px] text-brand-gold">⌘K</kbd>
+      </button>
+    </div>
+
+    <!-- Navigation Rail -->
+    <nav class="space-y-5 px-1" aria-label="Workspace modules">
+      <div>
+        <div class="px-2.5 pb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-gold/80">Workspace</div>
+        <div class="space-y-0.5">
+          <button
+            type="button"
+            data-nav-target="overview"
+            class="nav-tab group flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-all text-white bg-white/15 cursor-pointer"
+          >
+            <span class="flex items-center gap-2.5">
+              <span class="size-1.5 rounded-full bg-brand-gold" data-nav-dot></span>
+              <span>Live Desk</span>
+            </span>
+            <kbd class="font-mono text-[10px] text-brand-cream/50 group-hover:text-white">1</kbd>
+          </button>
+
+          <button
+            type="button"
+            data-nav-target="highlights"
+            class="nav-tab group flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-all text-brand-cream/70 hover:bg-white/10 hover:text-white cursor-pointer"
+          >
+            <span class="flex items-center gap-2.5">
+              <span class="size-1.5 rounded-full bg-white/25" data-nav-dot></span>
+              <span>Slider Sequence</span>
+            </span>
+            <kbd class="font-mono text-[10px] text-brand-cream/50 group-hover:text-white">2</kbd>
+          </button>
+
+          <button
+            type="button"
+            data-nav-target="announcements"
+            class="nav-tab group flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-all text-brand-cream/70 hover:bg-white/10 hover:text-white cursor-pointer"
+          >
+            <span class="flex items-center gap-2.5">
+              <span class="size-1.5 rounded-full bg-white/25" data-nav-dot></span>
+              <span>Notices & Circulars</span>
+            </span>
+            <kbd class="font-mono text-[10px] text-brand-cream/50 group-hover:text-white">3</kbd>
+          </button>
+
+          <button
+            type="button"
+            data-nav-target="news"
+            class="nav-tab group flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-all text-brand-cream/70 hover:bg-white/10 hover:text-white cursor-pointer"
+          >
+            <span class="flex items-center gap-2.5">
+              <span class="size-1.5 rounded-full bg-white/25" data-nav-dot></span>
+              <span>Press & News</span>
+            </span>
+            <kbd class="font-mono text-[10px] text-brand-cream/50 group-hover:text-white">4</kbd>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div class="px-2.5 pb-1.5 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-gold/80">System</div>
+        <div class="space-y-0.5">
+          <button
+            type="button"
+            data-nav-target="feedback"
+            class="nav-tab group flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-all text-brand-cream/70 hover:bg-white/10 hover:text-white cursor-pointer"
+          >
+            <span class="flex items-center gap-2.5">
+              <span class="size-1.5 rounded-full bg-white/25" data-nav-dot></span>
+              <span>Public Inbox</span>
+            </span>
+            <div class="flex items-center gap-1.5">
+              <span id="badge-feedback-count" class="hidden rounded bg-brand-gold px-1.5 py-0.2 font-mono text-[10px] font-bold text-white">0</span>
+              <kbd class="font-mono text-[10px] text-brand-cream/50 group-hover:text-white">5</kbd>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            data-nav-target="admins"
+            class="nav-tab group flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-medium transition-all text-brand-cream/70 hover:bg-white/10 hover:text-white cursor-pointer"
+          >
+            <span class="flex items-center gap-2.5">
+              <span class="size-1.5 rounded-full bg-white/25" data-nav-dot></span>
+              <span>Access & Roles</span>
+            </span>
+            <kbd class="font-mono text-[10px] text-brand-cream/50 group-hover:text-white">6</kbd>
+          </button>
+        </div>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Bottom Operator Pill -->
+  <div class="space-y-2 px-1 pt-4 border-t border-white/15">
+    <a
+      href="/"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs text-brand-cream/75 transition hover:bg-white/10 hover:text-white"
+    >
+      <span class="flex items-center gap-2">
+        <span class="size-1.5 rounded-full bg-emerald-400"></span>
+        <span>View Public Site</span>
+      </span>
+      <span class="font-mono text-[10px] text-brand-gold">↗</span>
+    </a>
+
+    <div class="flex items-center justify-between rounded-lg border border-white/15 bg-brand-maroon p-2">
+      <div class="flex items-center gap-2 overflow-hidden">
+        <div class="flex size-7 shrink-0 items-center justify-center rounded-md bg-brand-gold font-mono text-xs font-bold text-white uppercase" id="admin-avatar">
+          A
+        </div>
+        <div class="truncate">
+          <p id="admin-username" class="truncate text-xs font-medium text-white"></p>
+          <p id="admin-role" class="font-mono text-[9px] uppercase tracking-wider text-brand-gold"></p>
+        </div>
+      </div>
+      <button
+        id="sign-out"
+        type="button"
+        title="Sign out"
+        class="rounded-md p-1.5 text-brand-cream/60 transition hover:bg-white/15 hover:text-white cursor-pointer"
+        aria-label="Sign out"
+      >
+        <svg class="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+      </button>
+    </div>
+  </div>
+</aside>

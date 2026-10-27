@@ -51,7 +51,7 @@ one slideshow image 8.88 MB, 2.4 MB autoplay hero video).
 
 ```
 Branch:  main
-Build:   npm run check -> 0 errors, 0 warnings, 0 hints across 43 files.
+Build:   npm run check -> 0 errors, 0 warnings, 0 hints across 44 files.
 Routes:  npm run build -> static, 13 routes:
          - /
          - /bm/
@@ -60,8 +60,12 @@ Routes:  npm run build -> static, 13 routes:
          - /admin/
          - /admin/login/
          - /admin/dashboard/
-         - 3 news articles × EN/BM (/media/news/[slug]/ and /bm/media/news/[slug]/)
-Images:  37 build-time optimized WebP images compiled into dist/_astro/
+         - 3x EN news articles
+         - 3x BM news articles
+Image pipeline: 37 images optimized to WebP via Sharp.
+Photo Uploader: FilePond with auto-renaming + SortableJS grid + multi-file concurrency safety.
+Storage Lifecycle: Automatic cleanup of physical files in Supabase bucket on photo/album delete.
+Live Slider Sync: Stale-While-Revalidate client-side live hydration from Supabase with visibilitychange.
 ```
 
 **Key Master Files:**
@@ -178,20 +182,21 @@ Direct replacement for the legacy ColdFusion 120-image slider. Sits directly bel
 
 ---
 
-## 6. Admin Authentication System — Finalized
+## 6. Admin Authentication & Dashboard Workspace — Finalized
 
 - **Custom Credential Store:** Uses custom `public.admins` table instead of public Supabase Auth sign-ups (public registration is blocked; accounts must be provisioned internally).
 - **Password Security:** Passwords hashed with standard PostgreSQL `pgcrypto` (`crypt(password, gen_salt('bf', 10))`).
 - **RPC Login:** `verify_admin_login(p_username, p_password)` is a `SECURITY DEFINER` function that validates username/password, verifies active status (`admin_status = 1`), updates `last_login`, and returns session details without exposing the password hash.
 - **RPC Logout:** `record_admin_logout(p_admin_id)` logs departure timestamp.
 - **Frontend Guard:** `/admin/login` accepts username/password and stores user data in browser `sessionStorage['ysg_admin_session']`. `/admin/dashboard` automatically checks session presence and redirects to `/admin/login` if absent.
+- **Dashboard Workspace Scaffold (`/admin/dashboard`):** Two-column layout with dark maroon sidebar, sticky topbar with live portal shortcut, client-side zero-reload tab switcher, live KPI cards (Albums, Announcements, News, Feedback), and baseline manager for Highlights & Slider.
 
 ---
 
 ## 7. Asset Optimization & Image Pipeline — Finalized
 
 - **Directory Structure:** All local media moved into `src/assets/{albums, announcements, news, partners, quick-links}`.
-- **Astro Image Pipeline:** Integrated `astro:assets` `<Image />` with `import.meta.glob` across `HomeSlider`, `Announcements`, `GroupLinks`, `LatestNews`, and news detail pages.
+- **Astro Image Pipeline:** Integrated `astro:assets` `<Image />` with `import.meta.glob` and centralized helper `src/utils/imageHelper.ts` across `HomeSlider`, `Announcements`, `GroupLinks`, `LatestNews`, and news detail pages.
 - **Massive Payload Reduction:**
   - `taska-ria-2027.jpg` (8.88 MB uncompressed) was replaced with modern WebP, compiling down to ~20 KB in the build output.
   - Total initial media weight dropped by >90%.
@@ -199,11 +204,24 @@ Direct replacement for the legacy ColdFusion 120-image slider. Sits directly bel
 
 ---
 
-## 8. Key Files
+## 8. Layout Standardization — Centered Grid Restored
+- Reverted all landing page sections and global chrome from full-bleed (`w-full px-6 lg:px-8`) back to the centered standard container (`mx-auto max-w-7xl px-6 lg:px-8` / `px-4 sm:px-6 lg:px-8`):
+  - `Topbar.astro`, `Header.astro`, `Footer.astro`
+  - `Hero.astro`, `HomeSlider.astro` (dark background spans full-bleed, story cards & progress bar centered within `max-w-7xl`), `QuickAccess.astro`, `Announcements.astro`, `LatestNews.astro`, `DiscoverYSG.astro`, `GroupLinks.astro` (removed white disc backgrounds, borders, and gradient fade masks from marquee arrows), `HelpContact.astro`
+  - `src/pages/contact.astro` & `src/pages/bm/contact.astro`
+- No emoji policy strictly enforced across all workspace source files.
+- `astro check`: 0 errors, 0 warnings, 0 hints.
+- `astro build`: 13 pages statically generated cleanly.
+
+---
+
+## 9. Key Files
 
 | File | Role |
 |---|---|
+| `RULES.md` | Core development rules + Anti-Spaghetti & Fresh-Grad Readability standards |
 | `supabase/schema.sql` | Master PostgreSQL schema, tables, indexes, RLS, and RPC auth functions |
+| `src/utils/imageHelper.ts` | Centralized type-safe image resolver for Astro `<Image />` pipeline |
 | `src/data/nav.ts` | 64-item EN/BM nav — faithful 1:1 port of the legacy IA |
 | `src/i18n/ui.ts` | Translation keys, locale routing, hreflang helpers |
 | `src/styles/global.css` | Tailwind v4 `@theme` design tokens |
@@ -213,7 +231,7 @@ Direct replacement for the legacy ColdFusion 120-image slider. Sits directly bel
 | `src/components/home/QuickAccess.astro` | Centered flex-wrap service cards |
 | `src/components/home/GroupLinks.astro` | Infinite marquee partner links |
 | `src/pages/admin/login.astro` | Custom username/password admin login |
-| `src/pages/admin/dashboard.astro` | Admin dashboard layout & auth guard |
+| `src/pages/admin/dashboard.astro` | Admin Authority Workspace (sidebar, KPI cards, slider manager) |
 | `src/db/supabase.ts` | Supabase client + re-exports `src/types/*` |
 | `src/types/*.db.ts` | Row types: admin, album, news, announcement, quick links, etc. |
 
@@ -221,7 +239,10 @@ Direct replacement for the legacy ColdFusion 120-image slider. Sits directly bel
 
 ## 9. What's Left to Build
 
-- **Admin Content Panels:** UI forms inside `/admin/dashboard` for managing albums/photos, announcements, and news.
+- **Highlights & Slider Manager:** ✅ 100% Completed (Full album CRUD, Status: Draft/Published/Archived, auto-slug, FilePond uploader, auto-renaming, bucket cleanup, SortableJS gallery grid, and live SWR homepage sync).
+- **Important Announcements Manager:** ✅ 100% Completed (Redesigned with Linear/Raycast split console: Left notice feed + Right live dossier inspector with bilingual view, human-friendly media dropzones & PDF file cards with zero raw storage URLs exposed, inline editor with zero popup modals, real-time search, filter pills, arrow-key cycling, and anti-blink SWR live hydration on public `Announcements.astro`).
+- **News Articles Manager:** Corporate news stories, bilingual content, photo articles.
+- **Feedback & Inquiries Inbox:** View and triage messages sent via public contact form.
 - **64 Content Pages:** About (20), Activities + Directory (32), Media + utility (21).
 - **11 Utility Pages:** Privacy policy, disclaimer, FAQ page, etc.
 - **Dead Internal Links:** Connecting remaining landing-page CTAs to real pages.

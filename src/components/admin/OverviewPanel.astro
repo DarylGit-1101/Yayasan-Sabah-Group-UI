@@ -1,0 +1,114 @@
+---
+---
+
+<!-- PANEL 1: LIVE OPERATIONS DESK (OVERVIEW) -->
+<section id="panel-overview" class="panel-view space-y-7">
+  
+  <!-- Architectural Telemetry Strip -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 divide-y lg:divide-y-0 divide-x divide-brand-border rounded-xl border border-brand-border bg-white overflow-hidden shadow-2xs">
+    <button
+      type="button"
+      data-jump-target="highlights"
+      class="group p-4 sm:p-5 text-left transition hover:bg-brand-cream/25 cursor-pointer"
+    >
+      <div class="flex items-center justify-between font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-gold">
+        <span>01 / SLIDER ALBUMS</span>
+        <span class="text-brand-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-maroon">→</span>
+      </div>
+      <div class="mt-2 flex items-baseline gap-2">
+        <p id="stat-albums-count" class="font-mono text-3xl font-bold tracking-tight text-brand-maroon tabular-nums">-</p>
+        <span class="text-[11px] text-brand-muted">in rotation</span>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      data-jump-target="announcements"
+      class="group p-4 sm:p-5 text-left transition hover:bg-brand-cream/25 cursor-pointer"
+    >
+      <div class="flex items-center justify-between font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-gold">
+        <span>02 / PUBLIC NOTICES</span>
+        <span class="text-brand-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-maroon">→</span>
+      </div>
+      <div class="mt-2 flex items-baseline gap-2">
+        <p id="stat-announcements-count" class="font-mono text-3xl font-bold tracking-tight text-brand-maroon tabular-nums">-</p>
+        <span class="text-[11px] text-brand-muted">published</span>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      data-jump-target="news"
+      class="group p-4 sm:p-5 text-left transition hover:bg-brand-cream/25 cursor-pointer"
+    >
+      <div class="flex items-center justify-between font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-gold">
+        <span>03 / PRESS RELEASES</span>
+        <span class="text-brand-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-maroon">→</span>
+      </div>
+      <div class="mt-2 flex items-baseline gap-2">
+        <p id="stat-news-count" class="font-mono text-3xl font-bold tracking-tight text-brand-maroon tabular-nums">-</p>
+        <span class="text-[11px] text-brand-muted">archived & live</span>
+      </div>
+    </button>
+
+    <button
+      type="button"
+      data-jump-target="feedback"
+      class="group p-4 sm:p-5 text-left transition hover:bg-brand-cream/25 cursor-pointer"
+    >
+      <div class="flex items-center justify-between font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-gold">
+        <span>04 / CITIZEN INBOX</span>
+        <span class="text-brand-muted transition-transform group-hover:translate-x-0.5 group-hover:text-brand-maroon">→</span>
+      </div>
+      <div class="mt-2 flex items-baseline gap-2">
+        <p id="stat-feedback-count" class="font-mono text-3xl font-bold tracking-tight text-brand-maroon tabular-nums">-</p>
+        <span class="text-[11px] text-brand-muted">submissions</span>
+      </div>
+    </button>
+  </div>
+
+  <!-- Two-Column Live Portal Monitor -->
+  <div class="grid gap-6 lg:grid-cols-12 items-start">
+    
+    <!-- Left 7 Cols: Live Homepage Storyboard Deck -->
+    <div class="lg:col-span-7 rounded-xl border border-brand-border bg-white overflow-hidden shadow-2xs">
+      <div class="flex items-center justify-between border-b border-brand-border/80 bg-brand-cream/20 px-5 py-3.5">
+        <div class="flex items-center gap-2">
+          <span class="size-2 rounded-full bg-emerald-500"></span>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-brand-maroon">On-Air Slider Sequence</h2>
+        </div>
+        <button
+          type="button"
+          data-jump-target="highlights"
+          class="font-mono text-[11px] font-semibold text-brand-gold hover:text-brand-maroon cursor-pointer"
+        >
+          Open Sequencer →
+        </button>
+      </div>
+      <div id="overview-live-albums" class="divide-y divide-brand-border/50">
+        <div class="p-8 text-center font-mono text-xs text-brand-muted">Syncing live rotation…</div>
+      </div>
+    </div>
+
+    <!-- Right 5 Cols: Active Notices Wire -->
+    <div class="lg:col-span-5 rounded-xl border border-brand-border bg-white overflow-hidden shadow-2xs">
+      <div class="flex items-center justify-between border-b border-brand-border/80 bg-brand-cream/20 px-5 py-3.5">
+        <div class="flex items-center gap-2">
+          <span class="size-2 rounded-full bg-brand-gold"></span>
+          <h2 class="text-xs font-bold uppercase tracking-wider text-brand-maroon">Active Notices Wire</h2>
+        </div>
+        <button
+          type="button"
+          data-jump-target="announcements"
+          class="font-mono text-[11px] font-semibold text-brand-gold hover:text-brand-maroon cursor-pointer"
+        >
+          All Notices →
+        </button>
+      </div>
+      <div id="overview-live-notices" class="divide-y divide-brand-border/50">
+        <div class="p-8 text-center font-mono text-xs text-brand-muted">Syncing active notices…</div>
+      </div>
+    </div>
+
+  </div>
+</section>

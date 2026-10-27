@@ -1,0 +1,305 @@
+---
+---
+
+<!-- PANEL 3: ANNOUNCEMENTS EDITORIAL DESK -->
+<section id="panel-announcements" class="panel-view hidden space-y-4">
+  <!-- Compact Studio Header & Filter Bar -->
+  <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between border-b border-brand-border pb-4">
+    <div class="flex flex-wrap items-center gap-2">
+      <div id="announcement-filters" class="inline-flex items-center rounded-lg border border-brand-border bg-white p-0.5 text-xs">
+        <button type="button" data-filter="all" class="filter-pill active rounded-md px-2.5 py-1 font-semibold transition bg-brand-maroon text-white cursor-pointer">
+          All <span id="count-filter-all" class="ml-0.5 font-mono text-[10px] opacity-75">(0)</span>
+        </button>
+        <button type="button" data-filter="live" class="filter-pill rounded-md px-2.5 py-1 transition text-brand-muted hover:text-brand-maroon cursor-pointer">
+          Live <span id="count-filter-live" class="ml-0.5 font-mono text-[10px] opacity-75">(0)</span>
+        </button>
+        <button type="button" data-filter="pinned" class="filter-pill rounded-md px-2.5 py-1 transition text-brand-muted hover:text-brand-maroon cursor-pointer">
+          Pinned <span id="count-filter-pinned" class="ml-0.5 font-mono text-[10px] opacity-75">(0)</span>
+        </button>
+        <button type="button" data-filter="draft" class="filter-pill rounded-md px-2.5 py-1 transition text-brand-muted hover:text-brand-maroon cursor-pointer">
+          Drafts <span id="count-filter-draft" class="ml-0.5 font-mono text-[10px] opacity-75">(0)</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2.5">
+      <div class="relative flex-1 sm:w-64">
+        <input
+          type="text"
+          id="announcements-search"
+          placeholder="Filter notices… (press /)"
+          class="w-full rounded-lg border border-brand-border bg-white px-3 py-1.5 pl-8 text-xs text-brand-ink placeholder:text-brand-muted/70 focus:border-brand-gold focus:outline-none"
+        />
+        <svg class="absolute left-2.5 top-2 size-3.5 text-brand-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+
+      <button
+        id="btn-new-announcement"
+        type="button"
+        class="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-brand-maroon px-3.5 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-maroon-dark cursor-pointer"
+      >
+        <span>+ New Notice</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="announcements-loading" class="py-16 text-center font-mono text-xs text-brand-muted">
+    Loading notices…
+  </div>
+
+  <!-- Empty state -->
+  <div id="announcements-empty" class="hidden rounded-xl border border-dashed border-brand-border bg-white p-12 text-center">
+    <p class="text-sm font-semibold text-brand-maroon">No matching notices</p>
+    <p class="mt-1 text-xs text-brand-muted">Create a new notice or clear your active filter.</p>
+  </div>
+
+  <!-- Master-Detail Split Desk -->
+  <div id="announcements-split-container" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+    
+    <!-- Left Index List (4 cols) -->
+    <div class="lg:col-span-5 xl:col-span-4 flex flex-col rounded-xl border border-brand-border bg-white overflow-hidden shadow-2xs">
+      <div class="flex items-center justify-between border-b border-brand-border/80 bg-brand-cream/20 px-3.5 py-2 font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">
+        <span id="announcements-feed-count">INDEX</span>
+        <span class="text-brand-muted">↑↓ NAVIGATE</span>
+      </div>
+      <div id="announcements-feed-list" class="divide-y divide-brand-border/50 max-h-[640px] overflow-y-auto">
+        <!-- Dynamically populated announcement tiles -->
+      </div>
+    </div>
+
+    <!-- Right Live Document Sheet & Inline Editor (8 cols) -->
+    <div class="lg:col-span-7 xl:col-span-8 flex flex-col rounded-xl border border-brand-border bg-white overflow-hidden shadow-2xs min-h-[520px]">
+      
+      <!-- Inspector View -->
+      <div id="announcements-inspector-view" class="flex flex-col h-full">
+        <div class="flex items-center justify-between border-b border-brand-border/80 bg-brand-cream/15 px-5 py-3">
+          <div class="flex items-center gap-2" id="inspector-header-badges"></div>
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              id="btn-edit-current-announcement"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-brand-border bg-white px-3 py-1.5 text-xs font-semibold text-brand-maroon transition hover:border-brand-gold cursor-pointer"
+            >
+              <span>Edit</span>
+            </button>
+            <button
+              type="button"
+              id="btn-delete-current-announcement"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-rose-200 bg-rose-50/60 px-3 py-1.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-100 cursor-pointer"
+            >
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-5 flex-1 overflow-y-auto max-h-[620px]">
+          <!-- Banner Preview -->
+          <div id="inspector-banner-container" class="relative w-full aspect-video max-h-52 rounded-lg overflow-hidden bg-brand-maroon-dark border border-brand-border">
+            <img id="inspector-banner-img" src="" alt="" class="h-full w-full object-cover hidden" />
+            <div id="inspector-banner-placeholder" class="flex h-full w-full items-center justify-center bg-linear-to-br from-brand-maroon to-brand-maroon-dark p-6 text-center">
+              <div>
+                <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-brand-gold">YAYASAN SABAH GROUP</p>
+                <p class="mt-1 text-xs text-brand-cream/75">Text-only official circular</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Language Switcher & Copy -->
+          <div>
+            <div class="flex items-center justify-between border-b border-brand-border/80 pb-2.5">
+              <div class="inline-flex rounded-lg border border-brand-border bg-brand-surface p-0.5 text-xs">
+                <button type="button" id="tab-lang-en" class="rounded-md px-2.5 py-1 bg-brand-maroon text-white font-semibold transition cursor-pointer">EN</button>
+                <button type="button" id="tab-lang-bm" class="rounded-md px-2.5 py-1 text-brand-muted hover:text-brand-maroon font-medium transition cursor-pointer">BM</button>
+              </div>
+              <span id="inspector-date" class="font-mono text-[11px] text-brand-muted"></span>
+            </div>
+
+            <div class="mt-4 space-y-2.5">
+              <h3 id="inspector-title" class="text-lg font-bold text-brand-maroon leading-snug"></h3>
+              <p id="inspector-content" class="text-xs leading-relaxed text-brand-ink/85 whitespace-pre-line"></p>
+            </div>
+          </div>
+
+          <!-- Document Attachment Bar -->
+          <div id="inspector-attachment-box" class="hidden rounded-lg border border-brand-border bg-brand-cream/25 p-3.5">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="flex size-8 shrink-0 items-center justify-center rounded-md bg-brand-maroon font-mono text-[10px] font-bold text-brand-gold">DOC</span>
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-brand-maroon">Linked Circular / Target</p>
+                  <p id="inspector-attachment-label" class="font-mono text-[11px] text-brand-muted truncate">Official Document</p>
+                </div>
+              </div>
+              <a
+                id="inspector-attachment-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex shrink-0 items-center gap-1 rounded-lg bg-brand-gold px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-brand-gold-hover"
+              >
+                <span>Open</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Metadata Strip -->
+          <div class="rounded-lg border border-brand-border/70 bg-brand-surface px-3.5 py-2.5 font-mono text-[11px] text-brand-muted flex flex-wrap gap-x-6 gap-y-1">
+            <div>REF: <code id="inspector-slug" class="text-brand-maroon font-semibold"></code></div>
+            <div>EXPIRES: <span id="inspector-expires" class="text-brand-ink"></span></div>
+            <div>SYNCED: <span id="inspector-updated" class="text-brand-ink"></span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inline Editor View -->
+      <div id="announcements-editor-view" class="hidden flex flex-col h-full">
+        <div class="flex items-center justify-between border-b border-brand-border/80 bg-brand-cream/20 px-6 py-3.5">
+          <div>
+            <h3 id="editor-title-text" class="text-sm font-bold text-brand-maroon">Edit Notice</h3>
+          </div>
+          <button
+            type="button"
+            id="btn-cancel-editor"
+            class="rounded-lg border border-brand-border bg-white px-3 py-1 text-xs font-semibold text-brand-ink transition hover:bg-brand-surface cursor-pointer"
+          >
+            Discard
+          </button>
+        </div>
+
+        <form id="form-announcement" class="p-6 space-y-4 flex-1 overflow-y-auto max-h-[620px]">
+          <input type="hidden" id="announcement-id" name="announcement_id" />
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="announcement-status" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">State</label>
+              <select id="announcement-status" name="status" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none">
+                <option value="2">Published (Live)</option>
+                <option value="1">Draft</option>
+                <option value="3">Archived</option>
+              </select>
+            </div>
+            <div>
+              <label for="announcement-expires" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Auto-Expire (Optional)</label>
+              <input type="datetime-local" id="announcement-expires" name="expires_at" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="announcement-title-en" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Title (EN) *</label>
+              <input type="text" id="announcement-title-en" name="title_en" required placeholder="e.g. TASKA RIA Intake 2027" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+            </div>
+            <div>
+              <label for="announcement-title-bm" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Tajuk (BM) *</label>
+              <input type="text" id="announcement-title-bm" name="title_bm" required placeholder="cth. Kemasukan TASKA RIA 2027" class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none" />
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="announcement-content-en" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Body (EN)</label>
+              <textarea id="announcement-content-en" name="content_en" rows="3" placeholder="Summary details..." class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none"></textarea>
+            </div>
+            <div>
+              <label for="announcement-content-bm" class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Kandungan (BM)</label>
+              <textarea id="announcement-content-bm" name="content_bm" rows="3" placeholder="Butiran makluman..." class="mt-1.5 block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none"></textarea>
+            </div>
+          </div>
+
+          <div class="grid gap-5 sm:grid-cols-2">
+            <!-- 1. Banner Image -->
+            <div>
+              <label class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Cover Graphic</label>
+              <input type="hidden" id="announcement-banner-url" name="banner_url" />
+              <input type="file" id="announcement-banner-file" accept="image/png,image/jpeg,image/webp" class="hidden" />
+              
+              <div class="mt-1.5">
+                <label id="banner-dropzone-empty" for="announcement-banner-file" class="flex flex-col items-center justify-center rounded-lg border border-dashed border-brand-border bg-brand-surface p-4 text-center transition hover:border-brand-gold hover:bg-white cursor-pointer">
+                  <p id="banner-upload-text" class="text-xs font-semibold text-brand-maroon">Upload Banner Image</p>
+                  <p class="mt-0.5 font-mono text-[10px] text-brand-muted">CLICK OR DROP · PNG · JPG · WEBP</p>
+                </label>
+
+                <div id="banner-dropzone-preview" class="hidden relative rounded-lg border border-brand-border overflow-hidden bg-brand-maroon-dark aspect-video max-h-36">
+                  <img id="banner-preview-img" src="" alt="Banner preview" class="h-full w-full object-cover" />
+                  <div class="absolute inset-0 bg-linear-to-t from-black/75 via-transparent to-transparent flex items-end justify-between p-2.5">
+                    <label for="announcement-banner-file" class="cursor-pointer rounded bg-white px-2.5 py-1 text-[11px] font-semibold text-brand-maroon hover:bg-brand-cream transition">
+                      Replace
+                    </label>
+                    <button type="button" id="btn-remove-banner" class="rounded bg-rose-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-rose-700 transition cursor-pointer">
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Attachment / Link -->
+            <div>
+              <div class="flex items-center justify-between">
+                <label class="block font-mono text-[10px] font-semibold uppercase tracking-wider text-brand-maroon">Action Target</label>
+                <div class="flex items-center gap-2 text-[11px]">
+                  <button type="button" id="tab-attach-file" class="font-bold text-brand-maroon underline underline-offset-2 cursor-pointer">PDF File</button>
+                  <span class="text-brand-border">/</span>
+                  <button type="button" id="tab-attach-link" class="text-brand-muted hover:text-brand-maroon cursor-pointer">External URL</button>
+                </div>
+              </div>
+              <input type="hidden" id="announcement-attachment-url" name="attachment_url" />
+              <input type="file" id="announcement-attachment-file" accept=".pdf,application/pdf" class="hidden" />
+
+              <div id="attach-mode-file" class="mt-1.5">
+                <label id="attach-dropzone-empty" for="announcement-attachment-file" class="flex flex-col items-center justify-center rounded-lg border border-dashed border-brand-border bg-brand-surface p-4 text-center transition hover:border-brand-gold hover:bg-white cursor-pointer">
+                  <p id="attach-upload-text" class="text-xs font-semibold text-brand-maroon">Upload PDF Circular</p>
+                  <p class="mt-0.5 font-mono text-[10px] text-brand-muted">CLICK OR DROP · PDF DOCUMENT</p>
+                </label>
+
+                <div id="attach-dropzone-preview" class="hidden rounded-lg border border-brand-border bg-brand-cream/25 p-3">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span class="rounded bg-brand-maroon px-1.5 py-0.5 font-mono text-[10px] font-bold text-brand-gold shrink-0">PDF</span>
+                      <p id="attach-preview-filename" class="text-xs font-semibold text-brand-maroon truncate">document.pdf</p>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                      <label for="announcement-attachment-file" class="cursor-pointer rounded border border-brand-border bg-white px-2 py-1 text-[11px] font-semibold text-brand-maroon hover:bg-brand-surface">
+                        Replace
+                      </label>
+                      <button type="button" id="btn-remove-attachment" class="rounded border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] font-semibold text-rose-600 hover:bg-rose-100 cursor-pointer">
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div id="attach-mode-link" class="hidden mt-1.5">
+                <input
+                  type="url"
+                  id="announcement-external-link"
+                  placeholder="https://..."
+                  class="block w-full rounded-lg border border-brand-border bg-white px-3 py-2 text-xs text-brand-ink focus:border-brand-gold focus:outline-none"
+                />
+                <p class="mt-1 text-[11px] text-brand-muted">Applicants clicking the notice will open this URL.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="announcement-pinned" name="is_pinned" class="size-4 rounded border-brand-border text-brand-maroon focus:ring-brand-gold" />
+            <label for="announcement-pinned" class="text-xs font-semibold text-brand-ink">Pin to top of public announcements</label>
+          </div>
+
+          <div class="flex items-center justify-end gap-2.5 border-t border-brand-border/80 pt-4">
+            <button id="modal-announcement-cancel" type="button" class="rounded-lg border border-brand-border px-4 py-2 text-xs font-semibold text-brand-ink transition hover:bg-brand-surface cursor-pointer">Cancel</button>
+            <button id="modal-announcement-submit" type="submit" class="inline-flex items-center gap-2 rounded-lg bg-brand-maroon px-5 py-2 text-xs font-semibold text-white transition hover:bg-brand-maroon-dark cursor-pointer">
+              <span id="modal-announcement-label">Save Notice</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
